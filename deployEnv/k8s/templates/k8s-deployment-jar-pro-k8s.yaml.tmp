@@ -1,0 +1,107 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{JOB_NAME}}-{{ENV_NAME}}
+#  name: '{{JOB_NAME}}-{{ENV_NAME}}-{{VERSIONID}}'
+  namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    version: '{{VERSIONID}}'
+spec:
+  replicas: {{REPLICAS}}
+  selector:
+    matchLabels:
+      app: '{{JOB_NAME}}-{{ENV_NAME}}'
+      version: '{{VERSIONID}}'
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  template:
+    metadata:
+      labels:
+        app: '{{JOB_NAME}}-{{ENV_NAME}}'
+        version: '{{VERSIONID}}'
+    spec:
+      restartPolicy: Always
+      containers:
+      - image: '{{IMAGE_URL}}'
+        imagePullPolicy: Always
+        name: '{{JOB_NAME}}-{{ENV_NAME}}'
+        securityContext:
+          allowPrivilegeEscalation: false
+          #runAsNonRoot: true
+        ports:
+        - containerPort: {{PORT}}
+        # hpa 需要设置该项目
+        # cpu单位1000m 为一个1cpu
+        resources:
+            limits:
+#              cpu: {{cpuLimits}}m
+              memory: {{menLimits}}Mi
+            requests:
+#              cpu: {{cpuLimits}}m
+              memory: {{menRequests}}Mi
+#        readinessProbe:
+#          httpGet:
+#            path: /health
+#            port: {{PORT}}
+#            httpHeaders:
+#            - name: X-Custom-Header
+#              value: Awesome
+#          initialDelaySeconds: 60
+#          timeoutSeconds: 3
+        readinessProbe:
+          tcpSocket:
+            port: {{PORT}}
+          initialDelaySeconds: 30
+          timeoutSeconds: 2
+
+        livenessProbe:
+          tcpSocket:
+            port: {{PORT}}
+          initialDelaySeconds: 60
+          periodSeconds: 20
+      imagePullSecrets:
+        #- name: test-harbor
+        - name: image-key
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: '{{JOB_NAME}}-{{ENV_NAME}}'
+  namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    service: '{{JOB_NAME}}-{{ENV_NAME}}'
+spec:
+  ports:
+    - name: {{JOB_NAME}}-{{ENV_NAME}}-{{PORT}}
+      protocol: TCP
+      port: {{PORT}}
+      targetPort: {{PORT}}
+  selector:
+    app: {{JOB_NAME}}-{{ENV_NAME}}
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}
+
+#
+### ingrees
+##---
+##apiVersion: extensions/v1beta1
+##kind: Ingress
+##metadata:
+##  name: '{{JOB_NAME}}-{{ENV_NAME}}'-ingress
+##  namespace: {{ENV_NAME}}
+##spec:
+##  rules:
+##    - host: nginx-deployment.chenlei.com
+##      http:
+##        paths:
+##          - backend:
+##              serviceName: nginx-deployment-service
+#             servicePort: {{PORT}}

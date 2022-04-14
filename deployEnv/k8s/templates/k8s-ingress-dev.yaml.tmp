@@ -1,0 +1,38 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{JOB_NAME}}-{{ENV_NAME}}-ingress
+  namespace: {{ENV_NAME}}
+  annotations:
+    nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+    nginx.ingress.kubernetes.io/enable-cors: 'true' # 打开
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location  /druid {
+         deny all;
+      }
+#    nginx.ingress.kubernetes.io/limit-rps: '30' # 同ip每秒的并发
+#    nginx.ingress.kubernetes.io/limit-connections: '500' # 同ip的连接数
+#    nginx.ingress.kubernetes.io/enable-modsecurity: 'ture' # 软waf
+#    nginx.ingress.kubernetes.io/enable-owasp-modsecurity-crs: 'ture' #软waf
+#    nginx.ingress.kubernetes.io/whitelist-source-range: '192.168.1.0/24' #白名单
+spec:
+  rules:
+    - host: {{URL}}
+      http:
+        paths:
+          - backend:
+              serviceName: {{JOB_NAME}}-{{ENV_NAME}}
+              servicePort: {{PORT}}
+    # 针对特殊url 可以做限制，使用allow，deny 等操作配合server-snippet 注解
+#    - host: {{URL}}
+#      http:
+#        paths:
+#          - backend:
+#              serviceName: {{JOB_NAME}}-{{ENV_NAME}}
+#              servicePort: {{PORT}}
+#            path: /druid
+  tls:
+    - hosts:
+        - {{URL}}
+      secretName: xiaokangjun

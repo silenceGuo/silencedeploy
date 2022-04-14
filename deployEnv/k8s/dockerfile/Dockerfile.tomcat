@@ -1,0 +1,29 @@
+# Dockfile for service
+# FROM harbor.xiaokangjun.com/library/tomcat7:arth
+#FROM harbor.xiaokangjun.com/library/tomcat7:fonts
+#FROM harbor.xiaokangjun.com/library/tomcat7:fonts-zh-oss2
+#FROM registry.cn-hangzhou.aliyuncs.com/yek-base/tomcat7:fonts-zh-oss2
+FROM registry.cn-hangzhou.aliyuncs.com/yek-base/tomcat7:fonts-zh-oss3
+#FROM registry.cn-hangzhou.aliyuncs.com/yek-base/tomcat7:jdk1.8291
+#升级jdk版本
+# 增加字体工具，安装微软雅黑字体
+MAINTAINER 516605659@qq.com
+#ARG ServerNameDircd
+ARG WarName
+ARG envName
+#ARG dockerPort
+#安装skywalking agent 部署。目前不部署
+#RUN touch /app/tomcat7/logs/catalina.out
+COPY ./agent /app/agent
+COPY ./catalina.sh /app/tomcat7/bin/catalina.sh
+COPY ./server.xml /app/tomcat7/conf/server.xml
+COPY ${WarName}  /app/tomcat7/webapps/ROOT.war
+RUN chmod +x /app/tomcat7/bin/catalina.sh
+#RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
+#RUN chown 65530.nonroot -R /app/
+#USER 65530
+EXPOSE 8080
+#EXPOSE ${dockerPort}
+EXPOSE 12346
+CMD ["/app/tomcat7/bin/catalina.sh","run"]
+#CMD ["/app/tomcat7/bin/startup.sh"]

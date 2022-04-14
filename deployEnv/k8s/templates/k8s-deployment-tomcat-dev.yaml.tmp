@@ -1,0 +1,110 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{JOB_NAME}}-{{ENV_NAME}}
+  #name: '{{JOB_NAME}}-{{ENV_NAME}}-{{VERSIONID}}'
+  namespace: {{ENV_NAME}}
+spec:
+  replicas: {{REPLICAS}}
+  selector:
+    matchLabels:
+      app: '{{JOB_NAME}}-{{ENV_NAME}}'
+      version: '{{VERSIONID}}'
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  template:
+    metadata:
+      labels:
+        app: '{{JOB_NAME}}-{{ENV_NAME}}'
+        version: '{{VERSIONID}}'
+    spec:
+      restartPolicy: Always
+      hostAliases:
+      - ip: 192.168.10.131
+        hostnames:
+        - "oss.xiaokangjun.com"
+        - "open.xiaokangjun.com"
+        - "sso.xiaokangjun.com"
+#        - ip: 175.6.128.189
+#          hostnames:
+#          - "ecard.yeahcome.com"
+#          - "ecard-oauth.yeahcome.com"
+      containers:
+      - image: '{{IMAGE_URL}}'
+        imagePullPolicy: Always
+        name: '{{JOB_NAME}}-{{ENV_NAME}}'
+        securityContext:
+          allowPrivilegeEscalation: false
+#          runAsNonRoot: true
+        env:
+          - name: aliyun_logs_{{JOB_NAME}}-all
+            value: "/app/tomcat7/logs/ALL.log"
+          - name:  aliyun_logs_{{JOB_NAME}}-catalina
+            value: "stdout"
+          - name:  aliyun_logs_{{JOB_NAME}}-error
+            value: "/app/tomcat7/logs/error.log"
+          - name: aliyun_logs_{{JOB_NAME}}_tags
+            value: "env={{ENV_NAME}}"
+          - name: aliyun_logs_{{JOB_NAME}}-catalina_ttl
+            value: "90"
+          - name: aliyun_logs_{{JOB_NAME}}-all_ttl
+            value: "90"
+          - name: aliyun_logs_{{JOB_NAME}}-error_ttl
+            value: "90"
+        ports:
+        - containerPort: 8080
+        # hpa 需要设置该项目
+        # cpu单位1000m 为一个1cpu
+#        resources:
+#            limits:
+#              cpu: {{cpuLimits}}m
+#              memory: {{menLimits}}Mi
+#            requests:
+#              cpu: {{cpuLimits}}m
+#              memory: {{menLimits}}Mi
+        resources:
+            limits:
+#              cpu: {{cpuLimits}}m
+              memory: {{menLimits}}Mi
+            requests:
+#              cpu: {{cpuLimits}}m
+              memory: {{menRequests}}Mi
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 2
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 20
+      imagePullSecrets:
+        #- name: test-harbor
+#        - name: harbor-2
+        - name: image-key
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: '{{JOB_NAME}}-{{ENV_NAME}}'
+  namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    service: '{{JOB_NAME}}-{{ENV_NAME}}'
+spec:
+  ports:
+    - name: {{JOB_NAME}}-{{ENV_NAME}}-{{PORT}}
+      protocol: TCP
+      port: {{PORT}}
+      targetPort: 8080
+  selector:
+    app: {{JOB_NAME}}-{{ENV_NAME}}
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}

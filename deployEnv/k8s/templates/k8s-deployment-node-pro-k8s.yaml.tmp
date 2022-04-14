@@ -1,0 +1,154 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{JOB_NAME}}-{{ENV_NAME}}
+  #name: '{{JOB_NAME}}-{{ENV_NAME}}-{{VERSIONID}}'
+  namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    version: '{{VERSIONID}}'
+spec:
+  replicas: {{REPLICAS}}
+  selector:
+    matchLabels:
+      app: '{{JOB_NAME}}-{{ENV_NAME}}'
+      version: '{{VERSIONID}}'
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  template:
+    metadata:
+      labels:
+        app: '{{JOB_NAME}}-{{ENV_NAME}}'
+        version: '{{VERSIONID}}'
+    spec:
+      restartPolicy: Always
+      hostAliases:
+        - ip: 192.168.10.1
+          hostnames:
+          - "oss.xiaokangjun.com"
+          - "open.xiaokangjun.com"
+          - "sso.xiaokangjun.com"
+#          - "test-k8s-group-member.xiaokangjun.com"
+#          - "test-k8s-goods-api.xiaokangjun.com"
+#          - "test-k8s-shopcart-api.xiaokangjun.com"
+#          - "test-k8s-trade-api.xiaokangjun.com"
+#          - "test-k8s-activity-api.xiaokangjun.com"
+#          - "test-k8s-member-apixiaokangjun.com"
+#          - "test-k8s-goods-api.xiaokangjun.com"
+#          - "test-k8s-code-api.xiaokangjun.com"
+#          - "test-k8s-gbsi.xiaokangjun.com"
+#          - "test-k8s-shop-oss.xiaokangjun.com"
+#          - "test-k8s-pay.xiaokangjun.com"
+#          - "test-k8s-shop-h5oss.xiaokangjun.com"
+      containers:
+      - image: '{{IMAGE_URL}}'
+        imagePullPolicy: Always
+        name: '{{JOB_NAME}}-{{ENV_NAME}}'
+        securityContext:
+          allowPrivilegeEscalation: false
+#          runAsNonRoot: true
+        env:
+          - name: aliyun_logs_{{JOB_NAME}}-access
+            value: stdout
+          - name: aliyun_logs_{{JOB_NAME}}_tags
+            value: "env={{ENV_NAME}}"
+          - name: aliyun_logs_{{JOB_NAME}}-access_ttl
+            value: "90"
+          - name: aliyun_logs_{{JOB_NAME}}-access_ttl
+            value: "90"
+        ports:
+        - containerPort: {{PORT}}
+        # hpa 需要设置该项目
+        # cpu单位1000m 为一个1cpu
+        resources:
+            limits:
+#              cpu: {{cpuLimits}}m
+              memory: {{menLimits}}Mi
+            requests:
+#              cpu: {{cpuLimits}}m
+              memory: {{menLimits}}Mi
+#        readinessProbe:
+#          httpGet:
+#            path: /health
+#            port: {{PORT}}
+#            httpHeaders:
+#            - name: X-Custom-Header
+#              value: Awesome
+#          initialDelaySeconds: 30
+#          timeoutSeconds: 3
+
+        readinessProbe:
+          tcpSocket:
+            port: {{PORT}}
+          initialDelaySeconds: 60
+          timeoutSeconds: 2
+          periodSeconds: 20
+        livenessProbe:
+          tcpSocket:
+            port: {{PORT}}
+          initialDelaySeconds: 60
+          periodSeconds: 20
+      imagePullSecrets:
+        - name: image-key
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: '{{JOB_NAME}}-{{ENV_NAME}}'
+  namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    service: '{{JOB_NAME}}-{{ENV_NAME}}'
+spec:
+  ports:
+    - name: {{JOB_NAME}}-{{ENV_NAME}}-{{PORT}}
+      protocol: TCP
+      port: {{PORT}}
+      targetPort: {{PORT}}
+  selector:
+    app: {{JOB_NAME}}-{{ENV_NAME}}
+  type: ClusterIP
+  sessionAffinity: None
+status:
+  loadBalancer: {}
+
+# hpa
+#---
+#apiVersion: autoscaling/v2beta1
+#kind: HorizontalPodAutoscaler
+#metadata:
+#  name: {{JOB_NAME}}-{{ENV_NAME}}-hpa
+#  namespace: {{ENV_NAME}}
+#spec:
+#  scaleTargetRef:                             ##绑定名为nginx的Deployment。
+#    apiVersion: apps/v1
+#    kind: Deployment
+#    name: {{JOB_NAME}}-{{ENV_NAME}}
+#  minReplicas: 1
+#  maxReplicas: 10
+#  metrics:
+#  - type: Resource
+#    resource:
+#      name: cpu
+#      targetAverageUtilization: 50
+#
+
+## ingrees
+##---
+##apiVersion: extensions/v1beta1
+##kind: Ingress
+##metadata:
+##  name: '{{JOB_NAME}}-{{ENV_NAME}}'-ingress
+##  namespace: {{ENV_NAME}}
+##spec:
+##  rules:
+##    - host: nginx-deployment.chenlei.com
+##      http:
+##        paths:
+##          - backend:
+##              serviceName: nginx-deployment-service
+#              servicePort: {{PORT}}

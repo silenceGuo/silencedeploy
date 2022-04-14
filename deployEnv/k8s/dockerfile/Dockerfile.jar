@@ -1,0 +1,27 @@
+FROM registry.cn-hangzhou.aliyuncs.com/yek-base/jdk1.8:cst
+#FROM registry.cn-hangzhou.aliyuncs.com/yek-base/jdk:jdk1.8291
+#升级jdk版本容器化部署
+#FROM harbor.xiaokangjun.com/library/jdk1.8:centos7
+MAINTAINER 516605659@qq.com
+#RUN wget https://alibaba.github.io/arthas/arthas-boot.jar
+RUN mkdir -pv /app
+ARG jarName
+ARG envName
+ARG xmx
+ARG xmn
+ARG dockerPort
+ARG serverName
+COPY ./agent /app/agent
+COPY ${jarName}  /app/${jarName}
+#RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
+#RUN chown 65530.nonroot -R /app/
+#RUN chown 65530.nonroot -R /data/
+#USER 65530
+ENV envName $envName
+ENV serverName $serverName
+ENV xmx $xmx
+ENV xmn $xmn
+ENV jarName $jarName
+EXPOSE ${dockerPort}
+#CMD java -jar /app/${jarName} --spring.profiles.active=${envName}
+CMD java -Xms${xmx}m -Xmx${xmx}m  -Xmn${xmn}m -javaagent:/app/agent/skywalking-agent.jar -Dskywalking.agent.service_name=${serverName} -jar /app/${jarName} --spring.profiles.active=${envName}

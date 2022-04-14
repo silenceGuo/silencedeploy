@@ -1,0 +1,23 @@
+#FROM harbor.xiaokangjun.com/library/nginx:v1
+FROM registry.cn-hangzhou.aliyuncs.com/yek-base/nginx:v1
+MAINTAINER 516605659@qq.com
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+ENV  TIME_ZONE Asia/Shanghai
+RUN ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime
+RUN echo 'Asia/Shanghai' >/etc/timezone
+COPY ./dist  /usr/share/nginx/html
+COPY jr6sss1uLI.txt  /usr/share/nginx/html
+COPY default.conf /etc/nginx/conf.d/
+#RUN chmod +x /app/tomcat7/bin/catalina.sh
+#RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot
+#RUN chown 65530.nonroot -R /app/
+#USER 65530
+#EXPOSE ${dockerPort}
+#CMD npm run ${envName}
+
+
+
+
+

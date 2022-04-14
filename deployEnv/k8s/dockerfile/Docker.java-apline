@@ -1,0 +1,27 @@
+FROM alpine:3.8
+MAINTAINER yunwei <yunwei@36kr.com>
+WORKDIR /www
+RUN mv /etc/apk/repositories /etc/apk/repositories.bak \
+    && echo "http://mirrors.aliyun.com/alpine/v3.8/main/" >> /etc/apk/repositories \
+  && apk update && apk upgrade
+RUN apk --no-cache add ca-certificates wget && \
+    wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-2.29-r0.apk && \
+    apk add glibc-2.29-r0.apk && rm -f glibc-2.29-r0.apk
+RUN apk add -U --no-cache \
+  bash \
+  sudo \
+  tzdata \
+  drill  \
+  iputils \
+    curl \
+  busybox-extras \
+  && rm -rf /var/cache/apk/* \
+  && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+COPY java-jar/jdk1.8.0_131 /usr/local/jdk1.8.0_131
+ENV TZ="Asia/Shanghai"
+ENV JAVA_HOME=/usr/local/jdk1.8.0_131
+ENV CLASSPATH=$JAVA_HOME/bin
+ENV PATH=.:$JAVA_HOME/bin:$PATH
+ENV JAVA_OPTS="-server -Xms1024m -Xmx1024m"
+#CMD java -jar $JAVA_OPTS -Dserver.port=8080 server.jar
