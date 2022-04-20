@@ -151,6 +151,17 @@ def copyDir(serverName,sourfile,disfile):
 # 写启动服务顺序文件
 def writhfile(file,info):
     if not os.path.exists(file):
+        with open(file, 'w') as fd:
+            fd.write(info)
+        return file
+    else:
+        with open(file, 'w+')as fd:
+            fd.write(info)
+        return file
+
+# 写启动服务顺序文件
+def writhfileb(file,info):
+    if not os.path.exists(file):
         with open(file, 'wb') as fd:
             fd.write(info)
         return file
@@ -252,6 +263,7 @@ def genConfigFile(serverName,dataDict,tmp,outfile):
     fp_config = open(outfile, 'wb')
     fp_config.write(ret)
     fp_config.close()
+
 def pkill(keys):
     myloger("kill",msg="请谨慎使用,是批量kill 进程")
     cmd = "ps -aux| grep {keys}".format(keys=keys)
@@ -278,7 +290,7 @@ def genTmpFile(serverName,dataDict,tmp,outfile):
     # myloger(name=serverName, msg="common生成%s ,配置文件;%s" % (serverName, outfile))
     myloger(name=serverName, msg="应用:{serverName},使用模板:{Tmp} 生成文件:{outfile}".format(
         Tmp=tmp, serverName=serverName,outfile=outfile))
-    writhfile(outfile, ret)
+    writhfileb(outfile, ret)
 
 def desDeployStatus(serverName,kubectl,envName,kubeconfig):
    # 通过判断OldReplicaSets 是否存在，存在还在更新中，不在存说明已经更新完成
@@ -354,7 +366,7 @@ def sonar(serverName,mvn,masterDir):
           -Dsonar.projectKey={serverName} \
           -Dsonar.projectName={serverName} \
           -Dsonar.host.url=http://sonar.xiaokangjun.com \
-          -Dsonar.login=dfbfc9440259a0f94d903574ce757bddca35b7cb".format(serverName=serverName, mvn=mvn)
+          -Dsonar.login=xxx".format(serverName=serverName, mvn=mvn)
     os.chdir(masterDir)
     stdout, stderr = execSh(serverName,cmd)
     if "BUILD FAILURE" in stdout:
