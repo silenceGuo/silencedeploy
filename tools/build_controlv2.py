@@ -37,17 +37,17 @@ class build():
         self.jarPath = self.confDict["jarPath"]
         self.dockerfileDir = self.confDict["dockerfileDir"]
         self.nodeNginxConf = self.confDict["nodeNginxConf"].format(envName=self.envName)
+
         self.buildDir = self.serverDict[self.serverName]["buildDir"].format(envName=self.envName)
         self.codeType = self.serverDict[self.serverName]["codeType"]
         self.buildType = self.serverDict[self.serverName]["buildType"]
         self.sysConfigDir = self.confDict["gitsys"]["gitsysConfigDir"]
         if self.codeType == "git":
             self.git = git(serverConf, self.serverName)
-            self.gitUrl = self.build.serverDict[self.serverName][self.codeType]["gitUrl"]
+            self.gitUrl = self.serverDict[self.serverName][self.codeType]["gitUrl"]
         else:
             myloger("olny support git")
         self.masterDir = self.serverDict[self.serverName][self.codeType]["masterDir"].format(envName=self.envName)
-
         # print("url{env}".format(env=self.envName))
         # if "url{env}".format(env=self.envName) in self.serverDict[self.serverName]:
         #     self.url = self.serverDict[self.serverName]["url{env}".format(env=self.envName)]
@@ -64,15 +64,15 @@ class build():
              self.targetDir = self.serverDict[self.serverName]["targetDir"].format(envName=self.envName)
 
         self.deployFile = self.serverDict[self.serverName]["deployFile"].format(envName=self.envName)
-        self.http_port = self.serverDict[self.serverName]["http_port"]
         self.repUrl = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["url"]
         self.vpcrepUrl = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["vpcurl"]
         self.nameSpace = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["nameSpace"]
         self.userName = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["userName"]
         self.passWord = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["passWord"]
-        self.replicas = self.serverDict[self.serverName]["replicas"]
-        self.hpaMax = self.serverDict[self.serverName]["hpaMax"]
-        self.hpaCPU = self.serverDict[self.serverName]["hpaCPU"]
+        self.http_port = self.serverDict[self.serverName]["http_port"]
+        # self.replicas = self.serverDict[self.serverName]["replicas"]
+        # self.hpaMax = self.serverDict[self.serverName]["hpaMax"]
+        # self.hpaCPU = self.serverDict[self.serverName]["hpaCPU"]
 
     def addResource(self):
         self.targetDir = self.serverDict[self.serverName]["targetDir"].format(envName=self.envName)
@@ -98,17 +98,12 @@ class build():
         if not os.path.exists(self.buildDir):
             myloger(name=self.serverName, level="INFO", msg="项目未初始化,请初始化")
             sys.exit()
-        # stdout, stderr = execSh(self.serverName,"{java} -version".format(java=self.javaPath))
-        # stdout, stderr = execSh(self.serverName,"which java")
-        # stdout, stderr = execSh(self.serverName,"{mvn} -version".format(mvn=self.mvn))
-        # stdout, stderr = execSh(self.serverName,"which {mvn}".format(mvn=self.mvn))
         myloger(name=self.serverName, msg="%s Maven构建,工作目录：%s" % (self.serverName, self.buildDir))
         # self.git.pull(self.mbranchName)
         if self.action == "rebuild":
             pass
         else:
             self.git.pull(self.mbranchName)
-
         if self.serverName == "xkj-job-admin":
             # 针对job-admin工程处理，需要先对配置文件修改在进行打包构建
             self.addResource()
@@ -118,15 +113,6 @@ class build():
         cmd = "%(mvn)s clean && %(mvn)s -T 4 install -Dmaven.test.skip=true -Dmaven.compile.fork=true" % {"mvn": self.mvn}
         # cmd = "%(mvn)s clean && %(mvn)s -T 4 install org.apache.maven.plugins:maven-deploy-plugin:2.8:deploy -DskipTests -Dmaven.compile.fork=true" % {"mvn": self.mvn}
         stdout, stderr = execSh(self.serverName, cmd)
-        # if os.path.exists(self.resultYml):
-        #     statusDict = readYml(self.resultYml)
-        #     if self.serverName not in statusDict.keys():
-        #         statusDict[self.serverName] = {}
-        # else:
-        #     statusDict = {}
-        #     statusDict[self.serverName] = { }
-        # dateNow = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
-        # statusDict[self.serverName]["timestamps"] = dateNow
         statusDict = result(self.resultYml, self.serverName)
         if "BUILD FAILURE" in stdout:
             myloger(name=self.serverName, level="ERROR", msg="Maven构建失败,结果检查输出文件：%s" % self.resultYml)
@@ -159,15 +145,7 @@ class build():
         if self.buildType == "tomcat":
             os.chdir(self.sysConfigDir)
             myloger(name=self.serverName, level="INFO", msg="获取新配置")
-            if self.codeType == "git":
-                stdout, stderr = execSh(self.serverName, "git pull")
-            else:
-                stdout, stderr = execSh(self.serverName, "svn up")
-        else:
-            os.chdir(self.sysConfigDir)
-            myloger(name=self.serverName, level="INFO", msg="获取新配置")
-            pull_m_cmd = "git pull"
-            stdout, stderr = execSh(self.serverName,pull_m_cmd)
+            stdout, stderr = execSh(self.serverName, "git pull")
         ###############
         # 判断是否有git 执行错误
         # isNoErr(stdout, stderr)
@@ -190,13 +168,12 @@ class build():
         execSh(self.serverName,cmd)
         myloger(name=self.serverName, level="INFO", msg="重新封装打包完成")
 
-    def genCatalina(self):
+    def genCatalinaforK8S(self):
         dicttmp = {}
         """修改tocmat 启动内存参数，批量部署根据每个服务名的设置，调整完需要重启服务。"""
-        # if not checkServer(serverName):
-        #     print"%s is not install" % serverName
         self.menLimits = self.serverDict[self.serverName]["limits"]["memory"]
         self.menRequests = self.serverDict[self.serverName]["requests"]["memory"]
+        self.startMemory = self.serverDict[self.serverName]["requests"]["startMemory"]
         # self.jmxPort = self.serverDict[self.serverName]["jmxPort"]
         # dicttmp["jmxPort"] = self.jmxPort
         tmp = self.confDict["tomcatCatalinaTmp"]
@@ -215,10 +192,31 @@ class build():
         dicttmp["pinpointid"] = self.serverName + self.envName
         # dicttmp["pinpointid"] = serverName + ip[-1:4]
         genTmpFile(self.serverName,dicttmp,tmp,CatalinaPath)
-        # genConfigFile(self.serverName,dicttmp,tmp,CatalinaPath)
+    def genCatalina(self):
+        dicttmp = {}
+        """修改tocmat 启动内存参数，批量部署根据每个服务名的设置，调整完需要重启服务。"""
+        self.xmx = self.serverDict[self.serverName]["xmx"]
+        self.xms = self.serverDict[self.serverName]["xms"]
+        self.jmxPort = self.serverDict[self.serverName]["jmxPort"]
+        dicttmp["jmxPort"] = self.jmxPort
+        tmp = self.confDict["tomcatCatalinaTmp"]
+        servertmp = self.confDict["tomcatServerTmp"]
+        copyFile(self.serverName,servertmp,self.buildDir)
+        CatalinaPath = os.path.join(self.buildDir, "catalina.sh")
+        # xms = self.menLimits - 512
+        xmx = self.xmx
+        dicttmp["xms"] = self.xms
+        dicttmp["xmx"] = self.xmx
+        # xmn = str(int(xmx/2 * (3.0 / 8)))
+        xmn = str(int(xmx/2))
+        dicttmp["xmn"] = xmn
+        # 应用skywalking 增加环境名称
+        dicttmp["pinpointid"] = self.serverName + self.envName
+        # dicttmp["pinpointid"] = serverName + ip[-1:4]
+        genTmpFile(self.serverName,dicttmp,tmp,CatalinaPath)
     def buildImageTomcat(self):
         tag = self.genVersion()
-        self.genCatalina()
+        self.genCatalinaforK8S()
         # sys.exit()
         myloger(name=self.serverName, msg="构建镜像:%s" % (self.serverName))
         # 切换工作目录
@@ -326,6 +324,7 @@ class build():
         # sys.exit()
         # 拷贝 构建好的jar 包 到部署目录用于 构建镜像s
         # copyFile(serverName)
+        self.startMemory = self.serverDict[self.serverName]["requests"]["startMemory"]
         xms = self.startMemory
         xmx = self.startMemory
         xmn = str(int(xmx/2))
@@ -361,7 +360,7 @@ class build():
                                                               tag=tag,
                                                               xmx=xmx,
                                                               xmn=xmn,
-                                                              dockerPort=self.Port,
+                                                              dockerPort=self.http_port,
                                                               # jarName=self.deployFile
                                                               jarName=newJarPath
                                                                          )
@@ -391,10 +390,8 @@ class build():
         if not self.switchNodeVersion():
             return False
         myloger(name=self.serverName, msg="%s node 构建" % self.serverName)
-        if self.codeType == "svn":
-            self.svn.svnUpdate()
-        else:
-            self.git.pull(self.mbranchName)
+
+        self.git.pull(self.mbranchName)
         os.chdir(self.buildDir)
         myloger(name=self.serverName, msg="切换工作目录: %s " % self.buildDir)
         # cmdchdir = "su - root -c 'cd {buildDir} '".format(buildDir=self.buildDir)

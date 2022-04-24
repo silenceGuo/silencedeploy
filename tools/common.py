@@ -85,6 +85,31 @@ def execSh(serverName,cmd, print_msg=True):
         # sys.exit()
     return stdout_lines, stderr_lines
 
+def dir_is_null(path):
+    # print os.listdir(path)
+    if os.path.exists(path):
+        if os.listdir(path):
+            # 不为空 False
+            return False
+    # 是空返回True
+    return True
+
+def execShSmall(cmd):
+    # 执行SH命令
+    try:
+        print("执行ssh命令 %s" % cmd)
+        # myloger(serverName,msg="执行ssh b命令 %s" % cmd)
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    except Exception as e:
+        print(e)
+        sys.exit()
+    stdout,stderr = p.communicate()
+    stdout = str(stdout, encoding='utf-8')
+    stderr = str(stderr, encoding='utf-8')
+    # return p.communicate()
+    return stdout,stderr
+
+
 def printServerName(projectDict):
     sorted_dict = { }
     serverlist = sortedServerName(projectDict)
@@ -215,6 +240,20 @@ def result(resultYml,serverName):
     statusDict[serverName]["timestamps"] = dateNow
     return statusDict
 
+def writeResult(resultYml,envName,serverName,kubectl,kubeconfig):
+    statusDict = result(resultYml, serverName)
+    try:
+        res = checkDeployStatus(serverName, kubectl, envName, kubeconfig)
+        # statusDict[self.build.serverName]["deployResult"] = "True"
+        # writeYml(self.build.resultYml, statusDict)
+        statusDict[serverName]["deployResult"] = res
+        writeYml(resultYml, statusDict)
+    except func_timeout.exceptions.FunctionTimedOut:
+        myloger(name=serverName,
+                msg="部署服务:%s 检查服务更新状态超时！" % (serverName))
+        statusDict[serverName]["deployResult"] = "timeout"
+        writeYml(resultYml, statusDict)
+
 def showResult(resultYml,action,serverName):
     if os.path.exists(resultYml):
         serverDict = readYml(resultYml)
@@ -222,7 +261,6 @@ def showResult(resultYml,action,serverName):
     else:
         return
     # sortlist = sortedServerName(serverDict)
-
     if serverName == "all":
         for ser in sortlist:
             if action =="build":
@@ -257,7 +295,7 @@ def showResult(resultYml,action,serverName):
 
 
 def genConfigFile(serverName,dataDict,tmp,outfile):
-    ret = genConfigString(serverName, dataDict, tmp)
+    ret = genConfigString(dataDict, tmp)
     myloger(name=serverName, msg="生成%s ,配置文件;%s" % (serverName, outfile))
     # print(configstring[0:1050])
     fp_config = open(outfile, 'wb')
@@ -277,16 +315,17 @@ def pkill(keys):
     else:
         myloger("kill进程", msg="已取消操作")
 
-def genConfigString(serverName,dataDict,tmp):
+def genConfigString(dataDict,tmp):
     # myloger(name=serverName, msg="应用:{serverName},使用模板:{Tmp} 生成".format(
     #     Tmp=tmp, serverName=serverName))
     loader = template.Loader(tmp)
     ret = loader.load(tmp).generate(**dataDict)
     return ret
 
+
 def genTmpFile(serverName,dataDict,tmp,outfile):
     
-    ret = genConfigString(serverName, dataDict, tmp)
+    ret = genConfigString(dataDict, tmp)
     # myloger(name=serverName, msg="common生成%s ,配置文件;%s" % (serverName, outfile))
     myloger(name=serverName, msg="应用:{serverName},使用模板:{Tmp} 生成文件:{outfile}".format(
         Tmp=tmp, serverName=serverName,outfile=outfile))
@@ -354,14 +393,43 @@ def checkDeployStatus(serverName,kubectl,envName,kubeconfig):
         time.sleep(5)
     # return
 
+def cleanDir(path):
+    # deploymentAppPath = getDeploymentTomcatPath(serverName)["deployServerDir"]
+    if not os.path.exists(path):
+        print("Is not exit dir/file: %s" % path)
+    if not os.path.isfile(path):
+       try:
+           shutil.rmtree(path)
+           print("clean dir: %s" % path)
+       except Exception as e:
+           print(e)
+           sys.exit()
+    else:
+        # shutil.rmtree(path)
+        os.remove(path)
+        print("clean  file: %s " % path)
+
+
+def getip():
+    stdout, stderr = execShSmall("ip a")
+    # ipstr = [i.strip() for i in stdout.split(str.encode("\n")) if i.strip().startswith(str.encode("inet 192.168."))]
+    ipstr = [i.strip() for i in stdout.split("\n") if i.strip().startswith("inet 192.168.")]
+    # print ipstr
+    for i in ipstr:
+        if "eth" in i or "eno" in i:
+            iplist = i.split(" ")
+            # print iplist
+            for ips in iplist:
+                if ips.startswith("192.168.") and not ips.endswith("255"):
+                    ip = ips.split("/")[0]
+    if ip:
+        print("获取节点ip：%s" % ip)
+        return ip
+    else:
+        print("未获取节点ip 请检查" )
+        return "192.168.0.2"
+
 def sonar(serverName,mvn,masterDir):
-  # sonar.login = admin
-  # sonar.password = admin
-  #   cmd = "{mvn} -X sonar:sonar \
-  #       -Dsonar.projectKey={serverName} \
-  #       -Dsonar.projectName={serverName} \
-  #       -Dsonar.host.url=http://192.168.0.64:9000 \
-  #       -Dsonar.login=6439729faaae953c3b4d3a85c474ae36e028fbbc".format(serverName=serverName,mvn=mvn)
     cmd = "{mvn} -X sonar:sonar \
           -Dsonar.projectKey={serverName} \
           -Dsonar.projectName={serverName} \
@@ -428,7 +496,19 @@ def cleanfile(file):
     with open(file, 'w+') as fd:
         fd.write("")
 
+def TimeStampToTime(timestamp):
+    # 时间戳转换为时间
+    timeStruct = time.localtime(timestamp)
+    return time.strftime('%Y-%m-%d %H:%M:%S', timeStruct)
 
+def getTimeStamp(filePath):
+    # pthon2
+    # filePath = unicode(filePath, 'utf8')
+    #pthon3
+    filePath = str(filePath)
+    t = os.path.getmtime(filePath)
+    # return t
+    return TimeStampToTime(t)
 def getOptions():
     date_now = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     parser = OptionParser()
