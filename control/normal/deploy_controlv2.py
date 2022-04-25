@@ -59,8 +59,6 @@ class deployControl():
 
     def execAnsible(self,serverName, deploynode, action, env, typeName, version="-1"):
         serverNameDict = self.build.serverDict[serverName]
-        # deploynode = serverNameDict["{envName}NodeName".format(envName=env)][0]
-        # iplist = ansibleHostDict[deploynode]
         statusDict = {}
         myloger(name=serverName, level="INFO", msg=" server:%s is %s now " % (serverName, action))
         cmd = "ansible %s -i %s -m shell -a '%s %s -a %s -n %s -e %s -t %s -v %s'" % (
@@ -171,7 +169,6 @@ def main(serverName,serverConf,envConf):
             if not k.execAnsible(serverName,deploynode, "start", k.build.envName,k.buildType):
                 sys.exit(1)
     elif k.build.action == "restart":
-        # k.reDeploy()
         k.execAnsible(serverName, deploynode, "stop", k.build.envName, k.buildType)
         k.execAnsible(serverName, deploynode, "start", k.build.envName, k.buildType)
     elif k.build.action == "reinstall":
@@ -188,8 +185,6 @@ def main(serverName,serverConf,envConf):
     elif k.build.action == "reinit":
         # git仓库本地重新初始化
          k.git.reinit(serverName,k.build.masterDir,k.build.gitUrl)
-    # elif k.build.action=="reinitsys":
-    #     k.reinitSys()
     elif k.build.action == "send":
         if k.buildType == "node":
             k.build.buildNode()
@@ -204,13 +199,11 @@ def main(serverName,serverConf,envConf):
             k.sendToNode(serverName, deploynode, k.buildType)
         else:
             k.delployNodeDir(serverName, k.build.envName)
-            # k.execAnsible(serverName, deploynode, "back", k.build.envName, k.buildType)
 
     elif k.build.action == "rollback":
         # git仓库本地重新初始化
         # k.rollback()
         k.execAnsible(serverName, deploynode, "rollback", k.build.envName, k.buildType)
-        # k.execAnsible(serverName, deploynode, "delwar", k.build.envName, k.buildType)
     elif k.build.action == "createBranch":
         # 创建新分支
         if k.build.branchName:
@@ -245,7 +238,6 @@ def parallel():
         serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
     elif projectName == "xkj":
         serverConf = "/silencedeploy/config/startService-normal-{envName}.yaml".format(envName=envName)
-        # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
         git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
@@ -265,7 +257,6 @@ def parallel():
     if serverName == "all":
         sortlist = sortedServerName(serverDict)
         tpool=[]
-        # if action in ["deploy","status", "build", "restart", "redeploy", "canary", "rollback"]:
         if action in ["deploy", "reinstall","redeploy","restart", "canary", "rollback","status"]:
             for serName in sortlist:
                 if serName == "all":

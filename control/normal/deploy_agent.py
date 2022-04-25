@@ -17,37 +17,11 @@ import logging
 import shutil
 from logging import handlers
 import zipfile
+from collections import Counter
 import time
 import yaml
 from optparse import OptionParser
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-def getOptions():
-    parser = OptionParser()
-
-    parser.add_option("-n", "--serverName", action="store",
-                      dest="serverName",
-                      default=False,
-                      help="serverName to do")
-    parser.add_option("-a", "--action", action="store",
-                      dest="action",
-                      default=False,
-                      help="action -a [deploy,install,uninstall,reinstall,stop,start,restart,back,rollback,getback]")
-    parser.add_option("-v", "--versionId", action="store",
-                      dest="versionId",
-                      default=False,
-                      help="-v versionId")
-    parser.add_option("-e", "--envName", action="store",
-                      dest="envName",
-                      default=False,
-                      help="-e envName")
-    parser.add_option("-t", "--typeName", action="store",
-                      dest="typeName",
-                      default=False,
-                      help="-t typeName")
-    options, args = parser.parse_args()
-    return options, args
+from tools.common import *
 
 def getDeploymentTomcatPath(serverName):
     dateTime = time.strftime('%Y-%m-%d')
@@ -115,24 +89,16 @@ def getDir(dir):
             l1.append(abs_path)
     return l1
 
-def readYml(file):
-    with open(file)as fd:
-       res = yaml.safe_load(fd)
-    return res
-
 # 检查服务注册状态
 def checkServer(serverName):
-
     if os.path.exists(getDeploymentTomcatPath(serverName)["deployServerDir"]):
-        # print "%s is installed" % serverName
         return True
     else:
-        # print "%s is not install" % serverName
         return False
 
 # 检查端口占用
 def chekPort():
-    from collections import Counter
+
     portList=[]
     # for serverNameDict in serverNameDictList:
     for serverName, portDict in serverNameDictList.iteritems():
@@ -273,14 +239,8 @@ def changeCatalina(serverName):
     xmn = str(int(n/2)) + dw
     dicttmp["xmn"] = xmn
     genConfigFile(serverName,dicttmp)
-    # with open(CatalinaPathTMP) as fd:
-    #     soure = fd.readlines()
-    #     tmp = soure[1].format(xms=xms, xmx=xmx,jmxport=jmxport,ip=ip,catalinahome=deployDir)
-    #     soure[1] = tmp
-    #     print "调整启动内存参数为%s" % tmp
-    #     with open(CatalinaPath, 'w+') as fd1:
-    #         for line in soure:
-    #             fd1.write(line)
+    # genConfigFile(serverName, dataDict, tmp, outfile)
+
 
 def changeXML(serverName):
     """修改tocmat 启动服务参数，批量部署根据每个服务名的设置，调整完需要重启服务。"""
@@ -347,9 +307,6 @@ def getPid(serverName):
     else:
         print "%s is stoped" % serverName
 
-#方案二获取pid 不过只能针对centos7 且需要字符串处理过滤
-"""ss -antp|grep 9120"""
-"""LISTEN     0      100         :::9120                    :::*                   users:(("java",pid=99309,fd=46))"""
 
 def stopServer(serverName):
     # 停止服务 先正常停止，多次检查后 强制杀死！
@@ -638,9 +595,7 @@ def versionSort(list):
     return [i.vstring for i in vs]
 
 def getVersion(serverName):
-
     bakdeployRoot = getDeploymentTomcatPath(serverName)["bakServerDir"]
-
     # getDeploymentTomcatPath(serverName)["bakServerDir"]
     versionIdList = []
     try:
@@ -688,7 +643,6 @@ def getTimeStamp(filePath):
 #清理历史多余的备份文件和原来的war包
 def cleanHistoryBak(serverName):
     bakServerDir = getDeploymentTomcatPath(serverName)["bakServerDir"]
-
     VersinIdList = getVersion(serverName)
     # print VersinIdList
     if VersinIdList:
@@ -1004,7 +958,7 @@ if __name__ == "__main__":
     # sys.exit()
     # serverConf_test = "startServer.yml"  # 部署配置文件
     # serverconf = "/tmp/pycharm_project_651/python_project/serverConf.yml"
-    serverconf = "/python_yek/serverConf.yml"
+    serverconf = "/silencedeploy/config/config.yaml"
     # serverconf = "/data/init/serverConf.yml"
     confDict = readYml(serverconf)
     mvn = confDict["mvn"]

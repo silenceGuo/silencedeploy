@@ -10,22 +10,15 @@ import xml.dom.minidom
 import codecs
 from collections import Counter
 import sys
-# sys.path.append(os.path.abspath('/silencedeploy/tools'))
 sys.path.append('/silencedeploy') ## 项目的路径
-
 from tools.common import *
 
 class deployAgent():
     def __init__(self,serverconf,envName):
-
-        # serverconf = "/data/init/serverConf.yml"
         self.confDict = readYml(serverconf)
-        # self.hostDict = self.confDict["hostDict"]
-        # remote_py = confDict["remotePy"]
         self.tomcatPrefix = self.confDict["tomcatPrefix"]
         self.baseTomcat = self.confDict["baseTomcat"]
         self.deploymentAppDir = self.confDict["deploymentAppDir"]
-        # self.python = self.confDict["python"]
         self.checktime = self.confDict["checkTime"]
         self.java = self.confDict["javaPath"]
         self.nohup = self.confDict["nohup"]
@@ -68,7 +61,6 @@ class deployAgent():
         else:
             # 读配置文件 服务配置
             self.serverNameDictList = readYml(self.serverConf)
-            # self.type = self.serverNameDictList[]
             if not self.chekPort():
                 sys.exit()
 
@@ -82,24 +74,7 @@ class deployAgent():
                     continue
                 if not portstr.endswith("port"):
                     continue
-                # portstr == portDict[portstr]
-                # portList.append(portstr)
                 portList.append(portDict[portstr])
-            # try:
-            #     shutdown_port = portDict["shutdown_port"]
-            #     http_port = portDict["http_port"]
-            #     ajp_port = portDict["ajp_port"]
-            #     startNum = portDict["startNum"]
-            #     jmxport = portDict["jmx_port"]
-            # except Exception as e:
-            #     # pass
-            #     continue
-            # portList.append(startNum)
-            # portList.append(http_port)
-            # portList.append(jmxport)
-            # portList.append(shutdown_port)
-            # portList.append(ajp_port)
-        # print(portList)
         for port, num in Counter(portList).items():
             if num > 1:
                 print("%s is duplicated" % port)
@@ -159,7 +134,6 @@ class deployAgent():
                     copyDir(serverName,self.baseTomcat,deployDir)
                     # 修改部署tomcat server.xml配置文件
                     chownCmd = "chown -R tomcat:tomcat %s" % deployDir  # 目录权限修改
-                    # self.changeXml(serverName, shutdown_port=shutdown_port, http_port=http_port, ajp_port=ajp_port)
                     self.changeXML(serverName)
                     stdout, stderr = execShSmall(chownCmd)
                     if stdout:
@@ -344,12 +318,8 @@ class deployAgent():
         typeName = serverNameDict["buildType"]
         if typeName == "jar":
             cmd = "pgrep -f %s" % deployjar
-            # myloger(serverName,msg="执行 pgrep -f %s" % deployjar)
         else:
             cmd = "pgrep -f %s/temp" % deployDir
-            # cmd = "pgrep -f rancher"
-            # cmd = "pgrep -f /metrics-server"
-            # myloger(serverName, msg="执行 pgrep -f %s/tmp" % deployDir)
         pid, stderr = execShSmall(cmd)
         if pid:
             # string(pid,)
@@ -358,7 +328,6 @@ class deployAgent():
             print("%s is started" % serverName)
             print("Get PID:{pid}".format(pid=pidlist))
             return pidlist
-            # myloger(serverName,msg="Get PID:{pid}".format(pid=pid))
         else:
             print("%s is stoped" % serverName)
 
@@ -391,7 +360,6 @@ class deployAgent():
                 print("check servname :%s num:%s" % (serverName, i + 1))
                 if not self.getPid(serverName):
                     print("Server:%s,shutdown success" % serverName)
-                    # myloger(serverName,msg="Server:%s,shutdown success " % serverName)
                     return True
         pid_TMP = self.getPid(serverName)
         if pid_TMP:
@@ -434,12 +402,6 @@ class deployAgent():
         startSh = os.path.join(deployDir, "bin/startup.sh")
         if typeName == "jar":
             rootJar = os.path.join(deploydir, "ROOT.jar")
-            # if os.path.exists(deployjar) and os.path.exists(rootJar):
-            # if os.path.exists(rootJar):
-            #     print("删除文件%s" % deployjar)
-            #     if os.path.exists(deployjar):
-            #         os.remove(deployjar)
-            #         print("重命名%s 》》 %s" %(rootJar,deployjar))
             cleanDir(rootJar)
             print("重命名%s 》》 %s" % (rootJar, deployjar))
             os.rename(rootJar, deployjar)
@@ -476,17 +438,14 @@ class deployAgent():
             for i in range(self.checktime):
                 # time.sleep(5)
                 print("check servname :%s num:%s" % (serverName, i + 1))
-                # myloger(serverName, msg="check servname :%s num:%s" % (serverName, i + 1))
                 pidtmp = self.getPid(serverName)
                 if typeName == "jar":
                     print("Server:%s,start success pid:%s" % (serverName, pidtmp))
-                    # myloger(serverName, msg="Server:%s,start success pid:%s" % (serverName, pidtmp))
                     return True
                 else:
                     res = self.checkStartSucss(serverName)
                     if pidtmp and res:
                         print("Server:%s,start success pid:%s" % (serverName, pidtmp))
-                        # myloger(serverName, msg="Server:%s,start success pid:%s" % (serverName, pidtmp))
                         return True
             pidtmp = self.getPid(serverName)
             if typeName == "jar":
@@ -495,21 +454,17 @@ class deployAgent():
                 res = self.checkStartSucss(serverName)
             if self.getPid(serverName) and res:
                 print("Server:%s,Sucess pid:%s" % (serverName, pidtmp))
-                # myloger(serverName, msg="Server:%s,start success pid:%s" % (serverName, pidtmp))
                 return True
             else:
                 print("Server:%s,is not running" % serverName)
-                # myloger(serverName, msg="Server:%s,is not running" % serverName)
                 return False
         else:
             pidtmp = self.getPid(serverName)
             print("Server:%s,Sucessed pid:%s" % (serverName, pid))
-            # myloger(serverName, msg="Server:%s,start success pid:%s" % (serverName, pidtmp))
             return True
 
     def checkStartSucss(self,serverName):
         serverDict = self.getDeploymentTomcatPath(serverName)
-        # deployServerWarDir = serverDict["deployServerWarDir"]
         deployServerLogsDir = serverDict["deployServerLogsDir"]
         cmd = "tail -F %s" % deployServerLogsDir
         print(cmd)
@@ -518,7 +473,6 @@ class deployAgent():
         while True:
             for line in iter(p.stdout.readline, ''):
                 num += 1
-                # print " stdout:%s " % line.rstrip()
                 print(str(line.rstrip(), encoding='utf-8'))
                 if b"Server startup in" in line:
                     print("check server started Success")
@@ -574,7 +528,6 @@ class deployAgent():
                     print(stdout)
                 if stderr:
                     print(stderr)
-            # print"%s install sucess" % serverName
             if os.path.exists(deployServerWar):
                 print("RollBack Sucess,update serverName:%s" % serverName)
                 print("Rollback Version:%s " % versionId)
@@ -586,13 +539,8 @@ class deployAgent():
         deployServerWarDir = self.getDeploymentTomcatPath(serverName)["deployServerWarDir"]
         cleanDir(deployServerWarDir)
         return True
-        # if os.path.exists(deployServerWarDir):
-        #     print("clean history ROOT dir: %s" % deployServerWarDir)
-        #     cleanDir(deployServerWarDir)
-        #     return True
 
     def cleanRootTomcat(self,serverName, action):
-
         deployServerWarDir = self.getDeploymentTomcatPath(serverName)["deployServerWarDir"]
         deployWar = self.getDeploymentTomcatPath(serverName)["deployServerWar"]
         if action == "delwar":
@@ -622,7 +570,6 @@ class deployAgent():
         bakServerDir = self.getDeploymentTomcatPath(serverName)["bakServerDir"]
         if not os.path.exists(bakServerDir):
             os.mkdir(bakServerDir)
-        # print bakServerDir
         versionId = self.getBackVersionId(serverName)  # 同一日期下的最新版本
         try:
             lastVersinId = self.getVersion(serverName)[-1]
@@ -673,7 +620,6 @@ class deployAgent():
     def cleanHistoryBak(self,serverName):
         bakServerDir = self.getDeploymentTomcatPath(serverName)["bakServerDir"]
         VersinIdList = self.getVersion(serverName)
-        # print VersinIdList
         if VersinIdList:
             if len(VersinIdList) > int(self.bakNum):
                 cleanVersionList = VersinIdList[0:abs(len(VersinIdList) - int(bakNum))]
@@ -695,7 +641,6 @@ class deployAgent():
     def getBackVersionId(self,serverName):
         date = time.strftime("%Y-%m-%d")
         versionIdList = self.getVersion(serverName)
-        # print versionIdList
         if not versionIdList:
             return 1
         else:
@@ -730,8 +675,6 @@ class deployAgent():
 def main(action,serverName,version,envName):
     serverconf = "/silencedeploy/config/config.yaml"
     agenet = deployAgent(serverconf,envName)
-    # agenet.chekPort()
-    # sys.exit()
     action = action.lower()
     if action =="install":
         agenet.installServer(serverName)
@@ -790,8 +733,6 @@ if __name__ == "__main__":
     serverName = options.serverName
     envName = options.envName
     serverConf = "/silencedeploy/config/startService-normal-{envName}.yaml".format(envName=envName)
-    # print(getTimeStamp(serverConf))
-    # sys.exit(1)
     serverNameDictList=readYml(serverConf)
     if serverName == "all":
         for serverNameDict in serverNameDictList:

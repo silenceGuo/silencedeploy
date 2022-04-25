@@ -3,6 +3,15 @@
 
 支持线程池执行多任务
 
+config 配置文件目录
+
+control 控制脚本目录
+
+deployEnv模板目录
+
+tools 公共模块目录
+
+
 可以直接运行脚本执行或者通过Jenkins调用ssh脚本执行。
 
 k8s部署模式脚本位于 control/k8s/deploy_controlk8s.py
