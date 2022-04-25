@@ -1,0 +1,80 @@
+---
+xkj-upload:
+  startNum: 1
+  Parallel: False
+  buildType: tomcat # jar, node， 部署方式
+  codeType: git # svn 代码存放方式
+  git:
+     gitUrl: "git@codeup.aliyun.com:60af64b866bba1c04b43fc1c/xkj-upload.git"
+     masterDir: "/home/project/k8s-build-git/xkj-upload-{envName}"
+  url: "static.yekjx.com"
+  urltest: ""
+  targetDir: "/home/project/k8s-build-git/xkj-upload-{envName}/target/com.hxh.xhw.upload"
+  deployFile: "/home/project/k8s-build-git/xkj-upload-{envName}/target/com.hxh.xhw.upload.war"
+  buildDir: "/home/project/k8s-build-git/xkj-upload-{envName}/"
+  deployDir: "/project/project-deploy/xkj-upload"
+  devNodeName:
+    - devnginx
+  http_port: 8066
+  ajp_port: 8063
+  shutdown_port: 8062
+  jmx_port: 12345
+  xms: 256m
+  xmx: 512m
+
+xkj-job-admin:
+  startNum: 28
+  Parallel: True:q
+  replicas: 1
+  hpaMax: 1
+  hpaCPU: 400
+  buildType: jar # jar, node，
+  codeType: git # svn 代码存放方式
+  git:
+    gitUrl: "git@codeup.aliyun.com:60af64b866bba1c04b43fc1c/xkj-job-admin.git"
+    masterDir: "/home/project/k8s-build-git/xkj-job-admin-{envName}"
+  url: "admin-job.yekjx.com"
+  urltest: ""
+  devNodeName:
+    - devnginx
+  xms: 256m
+  xmx: 512m
+  deployDir: "/project/project-deploy/xkj-job-admin"
+  targetDir: "/home/project/k8s-build-git/xkj-job-admin-{envName}/src/main/resources"
+#  targetDir: "/project/project-build/job-admin-build/src/main/resources"
+  deployFile: "./target/xxl-job-admin-2.1.1-SNAPSHOT.jar"
+  buildDir: "/home/project/k8s-build-git/xkj-job-admin-{envName}/"
+  http_port: 9440
+  ajp_port: 8071
+  shutdown_port: 8072
+  jmx_port: 12346
+#
+xkj-h5-app:
+    startNum: 32
+    Parallel: True
+    replicas: 2
+    hpaMax: 3
+    hpaCPU: 400
+    buildType: node # jar, node， 部署方式
+    codeType: git # svn 代码存放方式
+    git:
+      gitUrl: "git@codeup.aliyun.com:60af64b866bba1c04b43fc1c/xkj-h5-app.git"
+      masterDir: "/home/project/k8s-build-git/xkj-h5-app-{envName}"
+    url: "h5.xiaokangjun.com"
+    urltest: "h5.xiaokangjun.com"
+    deployFile: ""
+    targetDir: "/home/project/k8s-build-git/xkj-h5-app-{envName}/dist"
+    buildDir: "/home/project/k8s-build-git/xkj-h5-app-{envName}"
+    deployDir: "/project/project-deploy/xkj-h5-app"
+    devNodeName:
+      - devnginx
+    http_port: 80
+    DubboPort:
+    limits:
+      cpu: 100 #单位m
+      memory: 1024 #单位M
+    requests:
+        cpu: 100 #单位m
+        memory: 1024 #单位M
+        startMemory: 512 #tomcat内存
+    nodeversion: v10.15.3

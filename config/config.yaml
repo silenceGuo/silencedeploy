@@ -1,0 +1,72 @@
+---
+# 设置环境变量和其他的相关配置
+mvnPath: "/app/apache-maven-3.6.1/bin/mvn"
+javaPath: "/app/jdk1.8.0_121/bin/java"
+jarPath: "/app/jdk1.8.0_121/bin/jar"
+javaHome: "/app/jdk1.8.0_121"
+# nohup 命令路径
+nohup: /usr/bin/nohup
+pythonPath: "/bin/python3"
+gitPath: "/bin/git"
+k8sTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-deployment-{buildType}-{envName}.yaml.tmp"
+k8shpaTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-hpa.yaml.tmp"
+canaryTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-deployment-canary.yaml.tmp"
+ingressTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-ingress-{envName}.yaml.tmp"
+tmpOutDir: "/python_yek/k8s/outDir"
+keepDeploymentYmlNum: 20
+kubectl: "/usr/local/bin/kubectl"
+#npmPath: "/app/node-v12.19.0-linux-x64/bin/npm"
+npmPath: "npm"
+#nodePath: "/app/node-v12.19.0-linux-x64/bin/node"
+nodePath: "node"
+npmRepo: "https://registry.npm.taobao.org"
+defkubeconfig: "/root/.kube/config"
+kubeconfig: "/root/.kube/config-{envName}"  #区分不同环境k8s集群执行
+startServer: "/tmp/xkj-k8s/outDir/start-{projectName}-{envName}.txt"
+tomcatCatalinaTmp: "/silencedeploy/deployEnv/k8s/templates/catalina.sh.tmp"
+tomcatServerTmp: "/silencedeploy/deployEnv/k8s/templates/server.xml"
+
+skywalkingAgent: "/silencedeploy/deployEnv/normal/templates/agent-{envName}"
+serverConf: "/silencedeploy/config/startService-normal-{envName}.yaml"
+buildthreadNum: 2 #构建并发线程
+deploythreadNum: 4 #部署并发线程
+resultYml: "/tmp/xkj-k8s/outDir/buildResult-{envName}.yaml"
+dockerfileDir: "/silencedeploy/deployEnv/k8s/dockerfile"
+nodeNginxConf: "/silencedeploy/deployEnv/k8s/templates/default-{envName}.conf"
+remotePy: /silencedeploy/control/normal/deploy_agentv2.py
+
+# 备份上一次的应用目录
+bakDir: /app/bak/
+# 并行线程数
+ParallelNum: 1
+# 备份文件控制版本数
+bakNum: 5
+#基础tomcat 路径
+baseTomcat: /silencedeploy/deployEnv/normal/templates/tomcat-7.0.64/
+#后缀
+tomcatPrefix: ''
+# 服务检查次数
+checkTime: 3
+# 日志路径
+logsPath: /data/logs/
+#整个工程集中部署目录
+deploymentAppDir: /project/project-deploy
+#ansible 主机文件
+ansibileHost: /etc/ansible/hosts
+gitsys:
+  gitsysConfig: "git@codeup.aliyun.com:60af64b866bba1c04b43fc1c/xkj-sys-config.git"
+  gitsysConfigDir: "/home/project/k8s-build/sys-config-git"
+
+imageRepo-dev:
+     url: "registry.cn-hangzhou.aliyuncs.com"
+     vpcurl: "registry.cn-hangzhou.aliyuncs.com"
+     nameSpace: "yek-dev"
+     userName: "xx"
+     passWord: "xx"
+
+imageRepo-test:
+     url: "registry.cn-hangzhou.aliyuncs.com"
+     vpcurl: "registry.cn-hangzhou.aliyuncs.com"
+     nameSpace: "yek-project"
+     userName: "xx"
+     passWord: "xx"

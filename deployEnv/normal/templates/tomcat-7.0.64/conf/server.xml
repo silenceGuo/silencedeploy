@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="{{shutdown_port}}" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JasperListener" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+  <Service name="Catalina">
+    <Executor name="tomcatThreadPool-{{serverName}}"  
+         namePrefix="catalina-exec-"  
+         maxThreads="500"  
+         minSpareThreads="100" 
+         maxIdleTime="60000" 
+         maxQueueSize="Integer.MAX_VALUE" 
+         prestartminSpareThreads="false" 
+         threadPriority="5" 
+         className="org.apache.catalina.core.StandardThreadExecutor"/>
+
+    <Connector port="{{http_port}}" 
+                 executor="tomcatThreadPool-{{serverName}}"
+                  URIEncoding="UTF-8" 
+                 acceptCount="2000"
+                 compressableMimeType="text/html,text/xml,text/javascript,text/css,text/plain"
+                  compression="on" 
+                 compressionMinSize="2048"
+                 connectionTimeout="20000"
+                  enableLookups="false"
+                  maxHttpHeaderSize="18192"
+                  maxThreads="2000"
+                  tcpNoDelay="true"
+                   maxConnections="2000"
+                  minSpareThreads="100" 
+                  protocol="org.apache.coyote.http11.Http11NioProtocol"
+                  redirectPort="8443"
+                disableUploadTimeout="true"/>
+<!--	<Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />-->			
+    <Engine name="Catalina" defaultHost="localhost">
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+      <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+        <Context   path="/"   docBase="{{warDir}}"   debug="0"/>
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log." suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+      </Host>
+    </Engine>
+  </Service>
+</Server>

@@ -111,13 +111,6 @@ class k8s():
                              msg="生成%s k8s Ingress部署文件:%s" % (self.build.serverName, self.ingressfile))
             genTmpFile(self.build.serverName, configvalues, self.k8sIngressTmp, self.ingressfile)
 
-        # if self.build.DubboPort:
-        #     self.dubboPortfile = os.path.join(deployDir, "{serverName}-{envName}-{versionID}.dubboPort.yaml".format(
-        #     serverName=self.build.serverName, envName=self.build.envName, versionID=self.build.versionID))
-        #     myloger(name=self.build.serverName,
-        #                    msg="生成%s k8s nodePort部署文件:%s" % (self.build.serverName, self.deployfile))
-        #     genTmpFile(self.build.serverName, configvalues, self.dubboPortTmp, self.dubboPortfile)
-
     def getHistoryVersion(self):
         myloger(name=self.build.serverName, msg="获取应用:{serverName},历史版本信息,名称空间:{namespace}".format(
             serverName=self.build.serverName, namespace=self.build.envName, versionId=self.build.versionId))
@@ -140,7 +133,6 @@ class k8s():
         ymlList = os.listdir(deployDir)
         ymlList.sort()
         FileNum = len(ymlList)
-        # removeFileList = ymlList[:(FileNum-self.keepDeploymentYmlNum)] #[ :12-20]
         if FileNum > self.keepDeploymentYmlNum:
             removeFileList = ymlList[:(FileNum - self.keepDeploymentYmlNum)]
             for i in removeFileList:
@@ -161,10 +153,6 @@ class k8s():
         execSh(self.build.serverName,"{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record=true --overwrite=true".format(
             configfile=self.deployfile, kubectl=self.kubectl, kubeconfig=self.kubeconfig
             ))
-        # execSh(self.build.serverName, "{kubectl} --kubeconfig {kubeconfig} patch -f {configfile} --record".format(
-        #     configfile=self.deployfile, kubectl=self.kubectl, kubeconfig=self.kubeconfig
-        # ))
-
         myloger(name=self.build.serverName,
                          msg="部署HPA服务:%s k8s部署文件:%s" % (self.build.serverName, self.hpafile))
         execSh(self.build.serverName,"{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record".format(
@@ -177,22 +165,11 @@ class k8s():
             execSh(self.build.serverName,"{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record".format(
                 configfile=self.ingressfile, kubectl=self.kubectl, kubeconfig=self.kubeconfig
             ))
-        # if self.build.DubboPort:
-        #     myloger(name=self.build.serverName,
-        #                    msg="部署nodePort:%s k8s部署文件:%s" % (self.build.serverName, self.ingressfile))
-        #     execSh(self.build.serverName,
-        #                   "{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record".format(
-        #                       configfile=self.dubboPortfile, kubectl=self.kubectl, kubeconfig=self.kubeconfig
-        #                   ))
         self.cleanDeployYml()
-        # resultstatusDict = showResult(self.build.resultYml, self.build.action,self.build.serverName)
-        # resultstatusDict = readYml(self.build.resultYml)
         statusDict = result(self.build.resultYml, self.build.serverName)
-        # showResult(self.build.resultYml, action, serverName)
+
         try:
             res = checkDeployStatus(self.build.serverName, self.kubectl, self.build.envName, self.kubeconfig)
-            # statusDict[self.build.serverName]["deployResult"] = "True"
-            # writeYml(self.build.resultYml, statusDict)
             statusDict[self.build.serverName]["deployResult"] = res
             writeYml(self.build.resultYml, statusDict)
         except func_timeout.exceptions.FunctionTimedOut:
@@ -200,9 +177,6 @@ class k8s():
                            msg="部署服务:%s 检查服务更新状态超时！" % (self.build.serverName))
             statusDict[self.build.serverName]["deployResult"] = "timeout"
             writeYml(self.build.resultYml, statusDict)
-        # checkDeployStatus(self.build.serverName, self.kubectl, self.build.envName, self.kubeconfig)
-        # if action == "deploy" or action == "redeploy":
-        #     checkDeployStatus(serName, kubectl, envName, kubeconfig)
 
     def canary(self):
         self.genConfigFile()
@@ -324,9 +298,6 @@ def main(serverName,serverConf,envConf):
                     k.build.pushImage()
 
         k.delpoyK8S()
-        # k.reDeploy()
-    # elif k.build.action == "deploy":
-    #     k.delpoyK8S()
     elif k.build.action == "redeploy":
         k.delpoyK8S()
     elif k.build.action == "restart":
@@ -397,10 +368,7 @@ def parallel():
         # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
-        if not os.path.exists(gitsysConfigDir):
-            git.init("","sysconfig",gitsysConfigDir,gitsysConfig)
-            # Gitinit("sysconfig", gitsysConfig, gitsysConfigDir)
-        # sys.exit(1)
+        git.init("","sysconfig",gitsysConfigDir,gitsysConfig)
     else:
         myloger(name=serverName, msg="类型错误:%s" % projectName)
         sys.exit()
@@ -430,7 +398,7 @@ def parallel():
                 else:
                     tpool.append(serName)
             threadPool(tpool, deploythreadNum, main, serverConf, envConf)
-        elif action in ["build1",'status']:
+        elif action in ["build",'status']:
             threadPool(sortlist, buildthreadNum, main, serverConf, envConf)
         else:
             if readfile(startConf):

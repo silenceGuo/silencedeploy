@@ -248,10 +248,7 @@ def parallel():
         # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
-        if not os.path.exists(gitsysConfigDir):
-            # Gitinit("sysconfig", gitsysConfig, gitsysConfigDir)
-            # g = git(serverConf,"sysconfig")
-            git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
+        git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
     else:
         myloger(name=serverName, msg="类型错误:%s" % projectName)
         sys.exit()
@@ -269,7 +266,7 @@ def parallel():
         sortlist = sortedServerName(serverDict)
         tpool=[]
         # if action in ["deploy","status", "build", "restart", "redeploy", "canary", "rollback"]:
-        if action in ["deploy", "redeploy","restart", "canary", "rollback","status"]:
+        if action in ["deploy", "reinstall","redeploy","restart", "canary", "rollback","status"]:
             for serName in sortlist:
                 if serName == "all":
                     continue

@@ -23,23 +23,19 @@ def parallel():
     envConf = "/silencedeploy/config/config.yaml"
     confDict = readYml(envConf)
     if projectName == "node":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
+        serverConf = "/silencedeploy/config/config.yaml"
     elif projectName == "springcloud":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
+        serverConf = "/silencedeploy/config/config.yaml"
     elif projectName == "xkj":
         serverConf = "/silencedeploy/config/startService-{envName}.yaml".format(envName=envName)
-        # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
-
         if not os.path.exists(gitsysConfigDir):
             Gitinit("sysconfig", gitsysConfig, gitsysConfigDir)
-        # sys.exit(1)
     else:
         myloger(name=serverName, msg="类型错误:%s" % projectName)
         sys.exit()
     serverDict = readYml(serverConf)
-    # print(serverDict)
     startConf = confDict["startServer"].format(envName=envName, projectName=projectName)
     deploythreadNum = confDict["deploythreadNum"]
     buildthreadNum = confDict["buildthreadNum"]
@@ -51,7 +47,6 @@ def parallel():
         cleanfile(startConf)
         myloger(name="consle", msg="情况启动文件顺序:%s" % startConf)
         sys.exit()
-    # threadPool = ThreadPoolExecutor(max_workers=threadNum, thread_name_prefix="test_")
     if serverName == "all":
         sortlist = sortedServerName(serverDict)
         tpool=[]
@@ -64,22 +59,12 @@ def parallel():
                     myloger(name=serName, msg="单线程执行:%s" % serName)
                     maink8s(serName, serverConf, envConf)
                 else:
-                    # common.myloger(name=serName, msg="多线程执行:%s，并发线程数:%s" % (serName, threadNum))
+                    # myloger(name=serName, msg="多线程执行:%s，并发线程数:%s" % (serName, threadNum))
                     # obj = threadPool.submit(main, serName, serverConf, envConf)
                     tpool.append(serName)
-            # for future in as_completed(tpool):
-            #     data = future.result()
-            #     common.myloger(name=name, msg="线程执行完成!")
-            # threadPool.shutdown(wait=True)
-
             threadPool(tpool, deploythreadNum, maink8s, serverConf, envConf)
-            # common.showResult(resultYml, action, serverName)
-            # common.myloger(name=name, msg="线程执行完成!")
-            # common.myloger(name=serName, msg="执行完成:%s" % serName)
         elif action in ["build","rebuild"]:
-            # common.threadPool2(sortlist, threadNum, main, [serverConf], [envConf])
             threadPool(sortlist, buildthreadNum, maink8s, serverConf, envConf)
-
         else:
             if readfile(startConf):
                 serName, point = readfile(startConf)
@@ -129,7 +114,7 @@ def maink8s(serverName,serverConf,envConf):
     if k.build.action == "build":
         # 构建镜像推送镜像
         if not k.build.mbranchName:
-            common.myloger(name=k.build.serverName, msg="follow -m branchName")
+            myloger(name=k.build.serverName, msg="follow -m branchName")
             return False
         if k.buildType == "node":
             if k.build.buildNode():
@@ -147,7 +132,6 @@ def maink8s(serverName,serverConf,envConf):
     elif k.build.action == "buildMaven":
         if k.buildType == "tomcat":
             if k.build.buildMaven():
-                # pass
                k.build.buildMavenTomcat()
                if k.build.buildImageTomcat():
                    k.build.pushImage()
@@ -158,8 +142,8 @@ def maink8s(serverName,serverConf,envConf):
         else:
             pass
     elif k.build.action == "sonar":
-        common.sonar(k.build.serverName,k.mvn,k.build.masterDir)
-    elif k.build.action == "deploy2":
+        sonar(k.build.serverName,k.mvn,k.build.masterDir)
+    elif k.build.action == "deploy":
         # if k.mbranchName and k.branchName != "master":
         #     k.git.merge(k.branchName, k.mbranchName)
         #
@@ -176,9 +160,6 @@ def maink8s(serverName,serverConf,envConf):
             if k.build.buildMaven():
                 if k.build.buildImage():
                     k.build.pushImage()
-        k.delpoyK8S()
-        # k.reDeploy()
-    elif k.build.action == "deploy":
         k.delpoyK8S()
     elif k.build.action == "redeploy":
         k.delpoyK8S()

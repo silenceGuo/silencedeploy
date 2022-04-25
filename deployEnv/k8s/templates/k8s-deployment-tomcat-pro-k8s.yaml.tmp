@@ -5,12 +5,15 @@ metadata:
   name: {{JOB_NAME}}-{{ENV_NAME}}
   #name: '{{JOB_NAME}}-{{ENV_NAME}}-{{VERSIONID}}'
   namespace: {{ENV_NAME}}
+  labels:
+    app: '{{JOB_NAME}}-{{ENV_NAME}}'
+    version: '{{VERSIONID}}'
 spec:
   replicas: {{REPLICAS}}
   selector:
     matchLabels:
       app: '{{JOB_NAME}}-{{ENV_NAME}}'
-      version: '{{VERSIONID}}'
+#      version: '{{VERSIONID}}'
   strategy:
     type: RollingUpdate
     rollingUpdate:

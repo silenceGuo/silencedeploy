@@ -209,7 +209,7 @@ class deployAgent():
 
     def installServer(self,serverName):
         buildType = self.serverNameDictList[serverName]["buildType"]
-        if buildType == "tomccat":
+        if buildType == "tomcat":
             self.installServeTomact(serverName)
             self.changeCatalina(serverName)
         else:
@@ -735,7 +735,6 @@ def main(action,serverName,version,envName):
     action = action.lower()
     if action =="install":
         agenet.installServer(serverName)
-        # agenet.changeCatalina(serverName)
     elif action == "uninstall":
         agenet.uninstallServer(serverName)
     elif action == "stop":
@@ -748,7 +747,6 @@ def main(action,serverName,version,envName):
     elif action == "reinstall":
         agenet.uninstallServer(serverName)
         agenet.installServer(serverName)
-        # agenet.changeCatalina(serverName)
     elif action == "back":
         agenet.backWar(serverName)
     elif action == "cleanroot":
@@ -767,8 +765,6 @@ def main(action,serverName,version,envName):
             print("%s is stoped" % serverName)
         else:
             print("%s is started" % serverName)
-        # print {serverName: "started"}
-        # return {serverName: "started"}
     elif action == "rollback":
         agenet.stopServer(serverName)
         agenet.rollBack(serverName, version)
