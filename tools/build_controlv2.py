@@ -4,9 +4,7 @@
 # @Author : damon.guo 
 # @File : buildInit.py 
 # @Software: PyCharm
-# from git_control import git
 from tools.git_control import git
-# import common
 from tools.common import *
 import os
 import datetime
@@ -230,7 +228,6 @@ class build():
         skywalkingAgentDeply = os.path.join(self.masterDir, "agent")
         if os.path.exists(skywalkingAgentDeply):
             shutil.rmtree(skywalkingAgentDeply)
-            # shutil.rmtree(serverSysConfigDir)
         myloger(name=self.serverName,
                        msg="%s 部署skywalking agent!" % (self.deployFile.format(envName=self.envName)))
         copyDir(self.serverName, skywalkingAgentTmp, skywalkingAgentDeply)
@@ -394,10 +391,6 @@ class build():
         self.git.pull(self.mbranchName)
         os.chdir(self.buildDir)
         myloger(name=self.serverName, msg="切换工作目录: %s " % self.buildDir)
-        # cmdchdir = "su - root -c 'cd {buildDir} '".format(buildDir=self.buildDir)
-        # stdout, stderr = execSh(self.serverName,cmdchdir)
-        # cmdchdir = "su - root -c 'pwd'"
-        # stdout, stderr = execSh(self.serverName,cmdchdir)
         cmdset = "su - root -c 'cd {buildDir} && {npm} config set registry {npmRepo}'".format(buildDir=self.buildDir,npm=self.npm,npmRepo=self.npmRepo)
         stdout, stderr = execSh(self.serverName, cmdset)
         if "/usr/bin/env: node: No such file" in stderr:

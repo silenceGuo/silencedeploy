@@ -4,17 +4,6 @@
 # @Author : damon.guo 
 # @File : Gitinitv2.py 
 # @Software: PyCharm
-# import yaml
-# from subprocess import PIPE,Popen
-# import os
-# import sys
-# import threading
-# import logging
-# import shutil
-# import datetime
-# from logging import handlers
-# import tools.common
-# from tools import common
 from tools.common import *
 # import tools.common
 
@@ -37,13 +26,6 @@ class git():
         # serverNameDict = self.serverDict[serverName]
         if not os.path.exists(masterDir):
             os.makedirs(masterDir)
-        # try:
-        #     gitUrl = serverNameDict["git"]["gitUrl"]
-        # except Exception as e:
-        #     print(e)
-        #     myloger(name=self.serverName, msg="异常:%s" % e)
-        #     return False
-
         os.chdir(masterDir)
         myloger(name=serverName, msg="deploy path:%s" % os.getcwd())
         stdout, stderr = execSh(serverName,"git status .")
