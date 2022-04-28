@@ -1,5 +1,7 @@
 # silencedeploy 文件说明
-需要运行环境安装python对应包
+基于python3 编写
+
+pip安装需要运行环境安装python对应包
 
 部署支持tomcat,jar,node等项目，分为传统模式部署和k8s模式部署
 
@@ -26,13 +28,14 @@ chmod +x deployEnv/normal/templates/tomcat-7.0.64/bin/*.sh
 sys.path.append('/silencedeploy') ## 项目的绝对路径
 
 k8s部署模式脚本位于 control/k8s/deploy_controlk8s.py
+
 使用方式：python  deploy_controlk8s.py -n xkj-upload -a build  -p xkj -e dev -m master -v v2
 
 支持：初始化，打包，构建 ，回滚，git仓库回滚 执行部署结果检查等。
 
 k8s部署模式脚本位于 control/normal/deploy_control.py
-使用方式：
-python deploy_control.py -n xkj-upload -a build  -p xkj -e dev -m master -v v2
+
+使用方式：python deploy_control.py -n xkj-upload -a build  -p xkj -e dev -m master -v v2
 
 支持：初始化，打包，构建 ，回滚，git仓库回滚 执行部署结果检查等。
 
