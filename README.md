@@ -39,4 +39,4 @@ k8s部署模式脚本位于 control/normal/deploy_control.py
 使用方式：python deploy_control.py -n xkj-upload -a build  -p xkj -e dev -m master -v v2
 
 支持：初始化，打包，构建 ，回滚，git仓库回滚 执行部署结果检查等。
-
+![image](https://user-images.githubusercontent.com/28891624/165673310-bfb33034-7148-490f-aa78-bd860684b0d2.png)
