@@ -10,7 +10,7 @@ import xml.dom.minidom
 import codecs
 from collections import Counter
 import sys
-sys.path.append('/silencedeploy') ## 项目的路径
+sys.path.append('/silencedeploy') ## 项目的绝对路径
 from tools.common import *
 
 class deployAgent():
