@@ -190,6 +190,7 @@ class build():
         dicttmp["pinpointid"] = self.serverName + self.envName
         # dicttmp["pinpointid"] = serverName + ip[-1:4]
         genTmpFile(self.serverName,dicttmp,tmp,CatalinaPath)
+
     def genCatalina(self):
         dicttmp = {}
         """修改tocmat 启动内存参数，批量部署根据每个服务名的设置，调整完需要重启服务。"""
@@ -215,7 +216,6 @@ class build():
     def buildImageTomcat(self):
         tag = self.genVersion()
         self.genCatalinaforK8S()
-        # sys.exit()
         myloger(name=self.serverName, msg="构建镜像:%s" % (self.serverName))
         # 切换工作目录
         os.chdir(self.masterDir)

@@ -33,7 +33,7 @@ deploythreadNum: 4 #部署并发线程
 resultYml: "/tmp/xkj-k8s/outDir/buildResult-{envName}.yaml"
 dockerfileDir: "/silencedeploy/deployEnv/k8s/dockerfile"
 nodeNginxConf: "/silencedeploy/deployEnv/k8s/templates/default-{envName}.conf"
-remotePy: /silencedeploy/control/normal/deploy_agentv2.py
+remotePy: /silencedeploy/control/normal/deploy_agent.py
 
 # 备份上一次的应用目录
 bakDir: /app/bak/

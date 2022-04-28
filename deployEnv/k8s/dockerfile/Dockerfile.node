@@ -9,7 +9,7 @@ RUN ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime
 RUN echo 'Asia/Shanghai' >/etc/timezone
 COPY ./dist  /usr/share/nginx/html
 #微信后台业务域名认证文件
-COPY jr6sss1uLI.txt  /usr/share/nginx/html
+#COPY jr6sss1uLI.txt  /usr/share/nginx/html
 COPY default.conf /etc/nginx/conf.d/
 #RUN chmod +x /app/tomcat7/bin/catalina.sh
 #RUN addgroup -S nonroot && adduser -u 65530 -S nonroot -G nonroot

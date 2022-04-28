@@ -5,7 +5,7 @@
 # @File : deploy_controlv2.py 
 # @Software: PyCharm
 from tools.git_control import git
-from tools.build_controlv2 import build
+from tools.build_control import build
 from tools.common import *
 
 class deployControl():
@@ -49,11 +49,11 @@ class deployControl():
 
         # copyFILE = "ansible %s -i %s -m synchronize -a 'src=%s dest=%s delete=yes'" % (deploynode, ansibleHost, buildDir, deployDir)
         # 同步编译后的dist目录
-        copyFILE = "ansible %s -i %s -m synchronize -a 'src=%s dest=%s delete=yes'" % (
-        deploynode, self.ansibleHost, distDir, deployDir)
-        #本地测试用
-        # copyFILE = 'ansible %s -i %s -m copy -a "src=%s dest=%s"' % (
-        #     deploynode, self.ansibleHost, distDir, deployDir)
+        # copyFILE = "ansible %s -i %s -m synchronize -a 'src=%s dest=%s delete=yes'" % (
+        # deploynode, self.ansibleHost, distDir, deployDir)
+        # 本地测试用
+        copyFILE = 'ansible %s -i %s -m copy -a "src=%s dest=%s"' % (
+            deploynode, self.ansibleHost, distDir, deployDir)
         # ReturnExec(copyFILE)
         stdout, stderr = execSh(serverName, copyFILE)
 
@@ -143,6 +143,12 @@ def main(serverName,serverConf,envConf):
            k.build.buildMaven()
     elif k.build.action == "sonar":
         sonar(k.build.serverName,k.mvn,k.build.masterDir)
+    elif k.build.action == "changmen":
+        # 用于批量远程修改tomcat 启动参数 不用重新部署
+        k.execAnsible(serverName,deploynode, k.build.action, k.build.envName,k.buildType)
+    elif k.build.action == "changxml":
+        # 用于批量远程修改tomcat 服务参数启动参数 不用重新部署72
+        k.execAnsible(serverName,deploynode, k.build.action, k.build.envName,k.buildType)
     elif k.build.action == "deploy":
         if k.buildType == "node":
             k.build.buildNode()
@@ -240,7 +246,8 @@ def parallel():
         serverConf = "/silencedeploy/config/startService-normal-{envName}.yaml".format(envName=envName)
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
-        git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
+        if not os.path.exists(gitsysConfigDir):
+            git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
     else:
         myloger(name=serverName, msg="类型错误:%s" % projectName)
         sys.exit()

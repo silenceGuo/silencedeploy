@@ -24,7 +24,7 @@ xkj-upload:
 
 xkj-job-admin:
   startNum: 28
-  Parallel: True:q
+  Parallel: True
   replicas: 1
   hpaMax: 1
   hpaCPU: 400
@@ -41,7 +41,6 @@ xkj-job-admin:
   xmx: 512m
   deployDir: "/project/project-deploy/xkj-job-admin"
   targetDir: "/home/project/k8s-build-git/xkj-job-admin-{envName}/src/main/resources"
-#  targetDir: "/project/project-build/job-admin-build/src/main/resources"
   deployFile: "./target/xxl-job-admin-2.1.1-SNAPSHOT.jar"
   buildDir: "/home/project/k8s-build-git/xkj-job-admin-{envName}/"
   http_port: 9440

@@ -402,9 +402,13 @@ class deployAgent():
         startSh = os.path.join(deployDir, "bin/startup.sh")
         if typeName == "jar":
             rootJar = os.path.join(deploydir, "ROOT.jar")
-            cleanDir(rootJar)
-            print("重命名%s 》》 %s" % (rootJar, deployjar))
-            os.rename(rootJar, deployjar)
+            if os.path.exists(rootJar):
+                cleanDir(deployjar)
+                print("重命名%s 》》 %s" % (rootJar, deployjar))
+            # if os.path.exists(deployjar):
+
+                os.rename(rootJar, deployjar)
+
             if envName == "dev":
                 deploynode = serverNameDict["devNodeName"][0]
             if envName == "test":

@@ -15,7 +15,7 @@ import func_timeout
 # import threading
 # import time
 from tools.git_control import git
-from tools.build_controlv2 import build
+from tools.build_control import build
 from tools.common import *
 """
 按照项目分，代码的拉取方式。和代码的部署方式，定义在配置文件中，增加项目选项 -p
@@ -167,18 +167,24 @@ class k8s():
             ))
         self.cleanDeployYml()
         statusDict = result(self.build.resultYml, self.build.serverName)
-
-        try:
-            res = checkDeployStatus(self.build.serverName, self.kubectl, self.build.envName, self.kubeconfig)
-            statusDict[self.build.serverName]["deployResult"] = res
-            writeYml(self.build.resultYml, statusDict)
-        except func_timeout.exceptions.FunctionTimedOut:
-            myloger(name=self.build.serverName,
-                           msg="部署服务:%s 检查服务更新状态超时！" % (self.build.serverName))
-            statusDict[self.build.serverName]["deployResult"] = "timeout"
+        # if self.build.serv
+        ## 有启动顺序要求的检查服务启部署状态
+        if self.build.serverDict[self.build.serverName]["Parallel"]:
+            try:
+                res = checkDeployStatus(self.build.serverName, self.kubectl, self.build.envName, self.kubeconfig)
+                statusDict[self.build.serverName]["deployResult"] = res
+                writeYml(self.build.resultYml, statusDict)
+            except func_timeout.exceptions.FunctionTimedOut:
+                myloger(name=self.build.serverName,
+                               msg="部署服务:%s 检查服务更新状态超时！" % (self.build.serverName))
+                statusDict[self.build.serverName]["deployResult"] = "timeout"
+                writeYml(self.build.resultYml, statusDict)
+        else:
+            statusDict[self.build.serverName]["deployResult"] = True
             writeYml(self.build.resultYml, statusDict)
 
     def canary(self):
+        ## 没有用
         self.genConfigFile()
         myloger(name=self.build.serverName, msg="金丝雀部署服务:%s k8s部署文件:%s" % (self.build.serverName, self.configfile))
         execSh(self.build.serverName,"{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record".format(
@@ -368,7 +374,8 @@ def parallel():
         # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
-        git.init("","sysconfig",gitsysConfigDir,gitsysConfig)
+        if not os.path.exists(gitsysConfigDir):
+            git.init("","sysconfig",gitsysConfigDir,gitsysConfig)
     else:
         myloger(name=serverName, msg="类型错误:%s" % projectName)
         sys.exit()

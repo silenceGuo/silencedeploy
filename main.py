@@ -11,6 +11,6 @@ def main():
     print("#"*50)
     print("normal env")
     # 执行 python \silencedeploy\control\k8s\deploy_controlk8s.py -n name -e env -a status -m master -p projectName -v v1
-    print("执行 python \silencedeploy\control\\normal\deploy_controlv2.py -n name -e env -a status -m master -p projectName -v v1")
+    print("执行 python \silencedeploy\control\\normal\deploy_control.py -n name -e env -a status -m master -p projectName -v v1")
     print("#" * 50)
 main()

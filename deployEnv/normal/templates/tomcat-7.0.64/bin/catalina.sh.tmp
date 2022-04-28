@@ -1,8 +1,8 @@
 #!/bin/sh
 CATALINA_OPTS="$CATALINA_OPTS -server
-          -Xms{{xms}}m
-          -Xmx{{xmx}}m
-          -Xmn{{xmn}}m
+          -Xms{{xms}}
+          -Xmx{{xmx}}
+          -Xmn{{xmn}}
           -Dcom.sun.management.jmxremote.port=12346
           -Dcom.sun.management.jmxremote.rmi.port=12346
           -Djava.rmi.server.hostname=jmx.xiaokangjun.com
@@ -29,8 +29,6 @@ CATALINA_OPTS="$CATALINA_OPTS -server
           -XX:+UseGCLogFileRotation
           -XX:NumberOfGCLogFiles=100
           -XX:GCLogFileSize=1M
-          -javaagent:/app/agent/skywalking-agent.jar
-          -Dskywalking.agent.service_name={{pinpointid}}
           "
 #skywalking agent探针
 #-javaagent:/app/agent/skywalking-agent.jar

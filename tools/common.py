@@ -403,7 +403,7 @@ def cleanDir(path):
            print("clean dir: %s" % path)
        except Exception as e:
            print(e)
-           sys.exit()
+           # sys.exit()
     else:
         # shutil.rmtree(path)
         os.remove(path)
