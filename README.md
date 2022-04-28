@@ -13,7 +13,7 @@ control 控制脚本目录
 
 deployEnv模板目录
 
-tools 公共模块目录
+tools 公共功能模块目录
 
 
 可以直接运行脚本执行或者通过Jenkins调用ssh脚本执行。
