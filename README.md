@@ -19,6 +19,7 @@ tools 公共模块目录
 可以直接运行脚本执行或者通过Jenkins调用ssh脚本执行。
 # 使用说明
 普通tomcat部署执行sh文件授权
+
 cd /silencedeploy
 
 chmod +x deployEnv/normal/templates/tomcat-7.0.64/bin/*.sh
