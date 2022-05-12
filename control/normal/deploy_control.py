@@ -123,7 +123,6 @@ def main(serverName,serverConf, configFile):
     # options.serverName = serverName
     k = deployControl(serverConf, configFile, serverName)
     k.build.serverName = serverName
-    k.build.projectName
     k.build.buildDir = k.build.serverDict[k.build.serverName]["buildDir"].format(envName=k.build.envName)
     k.build.masterDir = k.build.serverDict[k.build.serverName][k.build.codeType]["masterDir"].format(envName=k.build.envName)
     if k.buildType == "node":
