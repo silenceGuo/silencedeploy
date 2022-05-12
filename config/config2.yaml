@@ -8,10 +8,10 @@ javaHome: "/app/jdk1.8.0_121"
 nohup: /usr/bin/nohup
 pythonPath: "/bin/python3"
 gitPath: "/bin/git"
-k8sTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-deployment-{buildType}-{envName}.yaml.tmp"
-k8shpaTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-hpa.yaml.tmp"
-canaryTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-deployment-canary.yaml.tmp"
-ingressTmp: "/silencedeploy/deployEnv/k8s/templates/k8s-ingress-{envName}.yaml.tmp"
+k8sTmp: "/deployEnv/k8s/templates/k8s-deployment-{buildType}-{envName}.yaml.tmp"
+k8shpaTmp: "/deployEnv/k8s/templates/k8s-hpa.yaml.tmp"
+canaryTmp: "/deployEnv/k8s/templates/k8s-deployment-canary.yaml.tmp"
+ingressTmp: "/deployEnv/k8s/templates/k8s-ingress-{envName}.yaml.tmp"
 tmpOutDir: "/python_yek/k8s/outDir"
 keepDeploymentYmlNum: 20
 kubectl: "/usr/local/bin/kubectl"
@@ -24,18 +24,18 @@ defkubeconfig: "/root/.kube/config"
 kubeconfig: "/root/.kube/config-{envName}"  #区分不同环境k8s集群执行
 startServer: "/tmp/xkj-k8s/outDir/start-{projectName}-{envName}.txt"
 
-tomcatCatalinaTmp: "/silencedeploy/deployEnv/k8s/templates/catalina.sh.tmp"
-tomcatServerTmp: "/silencedeploy/deployEnv/k8s/templates/server.xml"
+tomcatCatalinaTmp: "/deployEnv/k8s/templates/catalina.sh.tmp"
+tomcatServerTmp: "/deployEnv/k8s/templates/server.xml"
 
-skywalkingAgent: "/silencedeploy/deployEnv/normal/templates/agent-{envName}"
-#serverConf: "/silencedeploy/config/startService-normal-{envName}.yaml"
-serverConf: "/silencedeploy/config/startService-{projectName}-{envName}.yaml"
+skywalkingAgent: "/deployEnv/normal/templates/agent-{envName}"
+#serverConf: "/config/startService-normal-{envName}.yaml"
+serverConf: "/config/startService-{projectName}-{envName}.yaml"
 buildthreadNum: 2 #构建并发线程
 deploythreadNum: 4 #部署并发线程
 resultYml: "/tmp/xkj-k8s/outDir/buildResult-{envName}.yaml"
-dockerfileDir: "/silencedeploy/deployEnv/k8s/dockerfile"
-nodeNginxConf: "/silencedeploy/deployEnv/k8s/templates/default-{envName}.conf"
-remotePy: /silencedeploy/control/normal/deploy_agent.py
+dockerfileDir: "/deployEnv/k8s/dockerfile"
+nodeNginxConf: "/deployEnv/k8s/templates/default-{envName}.conf"
+remotePy: /control/normal/deploy_agent.py
 
 # 备份上一次的应用目录
 bakDir: /app/bak/
@@ -44,7 +44,7 @@ ParallelNum: 1
 # 备份文件控制版本数
 bakNum: 5
 #基础tomcat 路径
-baseTomcat: /silencedeploy/deployEnv/normal/templates/tomcat-7.0.64/
+baseTomcat: /deployEnv/normal/templates/tomcat-7.0.64/
 #后缀
 tomcatPrefix: ''
 # 服务检查次数
@@ -57,7 +57,7 @@ deploymentAppDir: /project/project-deploy
 ansibileHost: /etc/ansible/hosts
 gitsys:
   gitsysConfig: "git@codeup.aliyun.com:60af64b866bba1c04b43fc1c/xkj-sys-config.git"
-  gitsysConfigDir: "/home/project/k8s-build-git/sys-config-git"
+  gitsysConfigDir: "/home/project/k8s-build/sys-config-git"
 
 imageRepo-dev:
      url: "registry.cn-hangzhou.aliyuncs.com"

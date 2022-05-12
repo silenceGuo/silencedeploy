@@ -175,6 +175,9 @@ def copyDir(serverName,sourfile,disfile):
 
 # 写启动服务顺序文件
 def writhfile(file,info):
+    absdir = os.path.abspath(os.path.join(file,"../"))
+    if not os.path.exists(absdir):
+        os.makedirs(absdir)
     if not os.path.exists(file):
         with open(file, 'w') as fd:
             fd.write(info)
@@ -545,8 +548,13 @@ def getOptions():
     # 项目名称，-n 则设定为项目中的名称
     parser.add_option("-p", "--projectName", action="store",
                       dest="projectName",
-                      default="default",
+                      default="k8s",
                       help="-p projectName")
+    # 配置文件
+    parser.add_option("-f", "--configFile", action="store",
+                      dest="configFile",
+                      default="config.yaml",
+                      help="-f configFile")
     options, args = parser.parse_args()
     return options, args
 

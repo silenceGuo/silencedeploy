@@ -22,6 +22,7 @@ class build():
         self.versionId = options.versionId
         self.envName = options.envName
         self.typeName = options.typeName
+        self.projectName = options.projectName
         self.serverDict = readYml(serverConf)
         self.confDict = readYml(envConf)
         self.tmpOutDir = self.confDict["tmpOutDir"]

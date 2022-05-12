@@ -362,22 +362,23 @@ def parallel():
     projectName = options.projectName
     envName = options.envName
     action = options.action
-    envConf = "/silencedeploy/config/config.yaml"
-    confDict = readYml(envConf)
-    if projectName == "node":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
-    elif projectName == "springcloud":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
-    elif projectName == "xkj":
+    configFile = options.configFile
+    absDir = os.path.abspath("../../config")
+    if configFile == "config.yaml":
+        configFile = os.path.join(absDir, configFile)
+    # sys.exit(1)
+    # envConf = "/silencedeploy/config/config.yaml"
+    confDict = readYml(configFile)
+    if projectName in ["k8s"]:
         # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config-{envName}.yaml".format(envName=envName)
-        serverConf = "/silencedeploy/config/startService-{envName}.yaml".format(envName=envName)
-        # serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
+        # serverConf = os.path.join(absDir,confDict["serverConf"].format(envName=envName,projectName=projectName))
+        serverConf = confDict["serverConf"].format(envName=envName,projectName=projectName)
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
         if not os.path.exists(gitsysConfigDir):
             git.init("","sysconfig",gitsysConfigDir,gitsysConfig)
     else:
-        myloger(name=serverName, msg="类型错误:%s" % projectName)
+        myloger(name=serverName, msg="类型名称错误:%s" % projectName)
         sys.exit()
     serverDict = readYml(serverConf)
     startConf = confDict["startServer"].format(envName=envName, projectName=projectName)
@@ -401,12 +402,12 @@ def parallel():
                     continue
                 if not serverDict[serName]["Parallel"]:
                     myloger(name=serName, msg="单线程执行:%s" % serName)
-                    main(serName, serverConf, envConf)
+                    main(serName, serverConf, configFile)
                 else:
                     tpool.append(serName)
-            threadPool(tpool, deploythreadNum, main, serverConf, envConf)
+            threadPool(tpool, deploythreadNum, main, serverConf, configFile)
         elif action in ["build",'status']:
-            threadPool(sortlist, buildthreadNum, main, serverConf, envConf)
+            threadPool(sortlist, buildthreadNum, main, serverConf, configFile)
         else:
             if readfile(startConf):
                 serName, point = readfile(startConf)
@@ -418,7 +419,7 @@ def parallel():
                 ser_index = sortlist.index(serName)
                 info = "%s:%s" % (ser_index, serName)
                 writhfile(startConf, info)
-                main(serName, serverConf, envConf)
+                main(serName, serverConf, configFile)
                 myloger(name=serName, msg="等待2s")
                 time.sleep(2)
         showResult(resultYml, action, serverName)
@@ -428,7 +429,7 @@ def parallel():
             myloger(name=serverName, msg="%s:服务名错误" % serverName)
             printServerName(serverDict)
             sys.exit()
-        main(serverName, serverConf, envConf)
+        main(serverName, serverConf, configFile)
         showResult(resultYml, action, serverName)
         cleanfile(startConf)
 

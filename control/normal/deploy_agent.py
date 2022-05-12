@@ -14,8 +14,8 @@ sys.path.append('/silencedeploy') ## 项目的绝对路径
 from tools.common import *
 
 class deployAgent():
-    def __init__(self,serverconf,envName):
-        self.confDict = readYml(serverconf)
+    def __init__(self,configFile,envName,projectName):
+        self.confDict = readYml(configFile)
         self.tomcatPrefix = self.confDict["tomcatPrefix"]
         self.baseTomcat = self.confDict["baseTomcat"]
         self.deploymentAppDir = self.confDict["deploymentAppDir"]
@@ -30,7 +30,7 @@ class deployAgent():
         self.logsPath = self.confDict["logsPath"]
         self.tomcatCatalinaTmp = self.confDict["tomcatCatalinaTmp"]
         self.tomcatServerTmp = self.confDict["tomcatServerTmp"]
-        self.serverConf = self.confDict["serverConf"].format(envName=envName,)
+        self.serverConf = self.confDict["serverConf"].format(envName=envName,projectName=projectName)
         # 初始化基础目录
         if not os.path.exists(self.deploymentAppDir):
             os.makedirs(self.deploymentAppDir)
@@ -676,9 +676,8 @@ class deployAgent():
             return []
         return self.versionSort(versionIdList)  # 返回版本号升序列表
 
-def main(action,serverName,version,envName):
-    serverconf = "/silencedeploy/config/config.yaml"
-    agenet = deployAgent(serverconf,envName)
+def main(configFile,action,serverName,version,envName,projectName):
+    agenet = deployAgent(configFile,envName,projectName)
     action = action.lower()
     if action =="install":
         agenet.installServer(serverName)
@@ -736,12 +735,21 @@ if __name__ == "__main__":
     version = options.versionId
     serverName = options.serverName
     envName = options.envName
-    serverConf = "/silencedeploy/config/startService-normal-{envName}.yaml".format(envName=envName)
+    projectName = options.projectName
+    configFile = options.configFile
+    # serverConf = confDict["serverConf"].format(envName=envName, projectName=projectName)
+    confDict = readYml(configFile)
+    if projectName in ["normal"]:
+        serverConf = confDict["serverConf"].format(envName=envName,projectName=projectName)
+    else:
+        myloger(name=serverName, msg="类型名称错误:%s" % projectName)
+        sys.exit()
     serverNameDictList=readYml(serverConf)
     if serverName == "all":
         for serverNameDict in serverNameDictList:
             for seName, portDict in serverNameDict.iteritems():
-                main(action, seName, version, envName)
+                main(configFile,action, seName, version, envName,projectName)
     else:
-       main(action, serverName, version, envName)
+       # serverconf, action, serverName, version, envName
+       main(configFile,action, serverName, version, envName,projectName)
 

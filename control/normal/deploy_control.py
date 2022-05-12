@@ -9,12 +9,15 @@ from tools.build_control import build
 from tools.common import *
 
 class deployControl():
-    def __init__(self,serverConf,envConf,serverName):
-        self.build = build(serverConf, envConf, serverName)
+    def __init__(self,serverConf,configFile,serverName):
+        self.build = build(serverConf, configFile, serverName)
         self.codeType = self.build.serverDict[serverName]["codeType"]
         self.buildType = self.build.serverDict[serverName]["buildType"]
-        # self.sysConfigDir = self.build.confDict["gitsys"]["gitsysConfigDir"]
-        # self.gitsysConfig = self.build.confDict["gitsys"]["gitsysConfig"]
+        # self.envConf = envConf
+        self.configFile = configFile
+        self.serverConf = serverConf
+        self.projectName = self.build.projectName
+
         if self.codeType == "git":
             self.git = git(serverConf, serverName)
         else:
@@ -58,11 +61,12 @@ class deployControl():
         stdout, stderr = execSh(serverName, copyFILE)
 
     def execAnsible(self,serverName, deploynode, action, env, typeName, version="-1"):
+        # build.projectName
         serverNameDict = self.build.serverDict[serverName]
         statusDict = {}
         myloger(name=serverName, level="INFO", msg=" server:%s is %s now " % (serverName, action))
-        cmd = "ansible %s -i %s -m shell -a '%s %s -a %s -n %s -e %s -t %s -v %s'" % (
-            deploynode, self.ansibleHost, self.python, self.remotePy, action, serverName, env, typeName, version)
+        cmd = "ansible %s -i %s -m shell -a '%s %s -a %s -n %s -e %s -t %s -v %s -f %s -p %s'" % (
+            deploynode, self.ansibleHost, self.python, self.remotePy, action, serverName, env, typeName, version,self.configFile,self.projectName)
         if action == "start":
             stdout, stderr = execSh(serverName,cmd)
         else:
@@ -113,12 +117,13 @@ class deployControl():
         deploynode, self.ansibleHost, deployFile, deployServerWar)
         execSh(serverName,copyFILE)
 
-def main(serverName,serverConf,envConf):
+def main(serverName,serverConf, configFile):
     # options = Options()
-    options, args = getOptions()
-    options.serverName = serverName
-    k = deployControl(serverConf, envConf, serverName)
+    # options, args = getOptions()
+    # options.serverName = serverName
+    k = deployControl(serverConf, configFile, serverName)
     k.build.serverName = serverName
+    k.build.projectName
     k.build.buildDir = k.build.serverDict[k.build.serverName]["buildDir"].format(envName=k.build.envName)
     k.build.masterDir = k.build.serverDict[k.build.serverName][k.build.codeType]["masterDir"].format(envName=k.build.envName)
     if k.buildType == "node":
@@ -236,20 +241,20 @@ def parallel():
     projectName = options.projectName
     envName = options.envName
     action = options.action
-    envConf = "/silencedeploy/config/config.yaml"
-    confDict = readYml(envConf)
-    if projectName == "node":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
-    elif projectName == "springcloud":
-        serverConf = "/python_yek/xkj-k8s/xkj/xkj-config.yaml"
-    elif projectName == "xkj":
-        serverConf = "/silencedeploy/config/startService-normal-{envName}.yaml".format(envName=envName)
+    configFile = options.configFile
+    absDir = os.path.abspath("../../config")
+    if configFile == "config.yaml":
+        configFile = os.path.join(absDir, configFile)
+
+    confDict = readYml(configFile)
+    if projectName in ["normal"]:
+        serverConf = confDict["serverConf"].format(envName=envName, projectName=projectName)
         gitsysConfig = confDict["gitsys"]["gitsysConfig"]
         gitsysConfigDir = confDict["gitsys"]["gitsysConfigDir"]
         if not os.path.exists(gitsysConfigDir):
             git.init("","sysconfig", gitsysConfigDir, gitsysConfig)
     else:
-        myloger(name=serverName, msg="类型错误:%s" % projectName)
+        myloger(name=serverName, msg="项目名称错误:%s" % projectName)
         sys.exit()
     serverDict = readYml(serverConf)
     startConf = confDict["startServer"].format(envName=envName, projectName=projectName)
@@ -270,12 +275,12 @@ def parallel():
                     continue
                 if not serverDict[serName]["Parallel"]:
                     myloger(name=serName, msg="单线程执行:%s" % serName)
-                    main(serName, serverConf, envConf)
+                    main(serName, serverConf, configFile)
                 else:
                     tpool.append(serName)
-            threadPool(tpool, deploythreadNum, main, serverConf, envConf)
+            threadPool(tpool, deploythreadNum, main, serverConf, configFile)
         elif action in ["build1",'status']:
-            threadPool(sortlist, buildthreadNum, main, serverConf, envConf)
+            threadPool(sortlist, buildthreadNum, main, serverConf, configFile)
         else:
             if readfile(startConf):
                 serName, point = readfile(startConf)
@@ -287,7 +292,7 @@ def parallel():
                 ser_index = sortlist.index(serName)
                 info = "%s:%s" % (ser_index, serName)
                 writhfile(startConf, info)
-                main(serName, serverConf, envConf)
+                main(serName, serverConf, configFile)
                 myloger(name=serName, msg="等待2s")
                 time.sleep(2)
         # showResult(resultYml, action, serverName)
@@ -297,7 +302,7 @@ def parallel():
             myloger(name=serverName, msg="%s:服务名错误" % serverName)
             printServerName(serverDict)
             sys.exit()
-        main(serverName, serverConf, envConf)
+        main(serverName, serverConf, configFile)
         # showResult(resultYml, action, serverName)
         cleanfile(startConf)
 if __name__ == "__main__":
