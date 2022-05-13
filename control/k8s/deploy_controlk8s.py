@@ -27,14 +27,10 @@ class k8s():
         self.ingressTmp = self.build.confDict["ingressTmp"].format(envName=self.build.envName)
         self.codeType = self.build.serverDict[serverName]["codeType"]
         self.buildType = self.build.serverDict[serverName]["buildType"]
-        # self.sysConfigDir = self.build.confDict["gitsys"]["gitsysConfigDir"]
-        # self.gitsysConfig = self.build.confDict["gitsys"]["gitsysConfig"]
+
         if self.codeType == "git":
             self.git = git(serverConf, serverName)
             self.gitUrl = self.build.serverDict[serverName][self.codeType]["gitUrl"]
-        else:
-            pass
-            # self.svn = svn(serverConf, serverName)
         self.hpaTmp = self.build.confDict["k8shpaTmp"]
         self.tmpOutDir = self.build.confDict["tmpOutDir"]
         if not os.path.exists(self.tmpOutDir):
@@ -43,14 +39,6 @@ class k8s():
         self.kubectl = self.build.confDict["kubectl"]
         self.mvn = self.build.confDict["mvnPath"]
         self.kubeconfig = self.build.confDict["kubeconfig"].format(envName=self.build.envName)
-    #
-    # def initSys(self):
-    #     # 初始化 syconfig本地git仓库
-    #     self.git.init("sysconfig", self.sysConfigDir, self.gitsysConfig)
-    #
-    # def reinitSys(self):
-    #     cleanDir(self.sysConfigDir)
-    #     self.git.init("sysconfig", self.sysConfigDir, self.gitsysConfig)
 
     def genConfigFile(self):
         self.build.versionID = self.build.getVersion()
@@ -147,8 +135,6 @@ class k8s():
 
     def delpoyK8S(self):
         self.genConfigFile()
-        # self.dubboPortfile
-        # sys.exit()
         myloger(name=self.build.serverName, msg="部署服务:%s k8s部署文件:%s" % (self.build.serverName, self.deployfile))
         execSh(self.build.serverName,"{kubectl} --kubeconfig {kubeconfig} apply -f {configfile} --record=true --overwrite=true".format(
             configfile=self.deployfile, kubectl=self.kubectl, kubeconfig=self.kubeconfig
@@ -167,7 +153,6 @@ class k8s():
             ))
         self.cleanDeployYml()
         statusDict = result(self.build.resultYml, self.build.serverName)
-        # if self.build.serv
         ## 有启动顺序要求的检查服务启部署状态
         if self.build.serverDict[self.build.serverName]["Parallel"]:
             try:
@@ -206,7 +191,6 @@ class k8s():
     def reDeploy(self):
         " 重新部署原来的工程，配置保持不变，相当于重启"
         "kubectl rollout restart deployment demo-dev -n dev"
-        # self.delpoyK8S()
         execSh(self.build.serverName, "{kubectl} --kubeconfig {kubeconfig} rollout restart deployment {serverName}-{envName} -n {envName}".format(
             serverName=self.build.serverName,
             envName=self.build.envName,
@@ -232,7 +216,6 @@ class k8s():
         checkDeployStatus(self.build.serverName, self.kubectl, self.build.envName, self.kubeconfig)
 
 def main(serverName,serverConf,envConf):
-    # options = Options()
     options, args = getOptions()
     options.serverName = serverName
     k = k8s(serverConf, envConf, serverName)
@@ -249,7 +232,6 @@ def main(serverName,serverConf,envConf):
     k.build.userName = k.build.confDict["imageRepo-{envName}".format(envName=k.build.envName)]["userName"]
     k.build.passWord = k.build.confDict["imageRepo-{envName}".format(envName=k.build.envName)]["passWord"]
     k.build.replicas = k.build.serverDict[k.build.serverName]["replicas"]
-    # k.git.masterDir = k.build.serverDict[k.build.serverName]["gitRepo"]["masterDir"].format(envName=k.build.envName)
     if k.codeType == "git":
          k.git.serverName = serverName
     if k.build.action == "build":
@@ -328,7 +310,7 @@ def main(serverName,serverConf,envConf):
     elif k.build.action == "init":
         # git仓库本地初始化
         k.git.init(k.build.serverName, k.build.masterDir, k.build.gitUrl)
-        # k.git.init(k.serverName)
+
     elif k.build.action == "reinit":
         # git仓库本地重新初始化
          k.git.reinit(k.build.serverName, k.build.masterDir, k.build.gitUrl)
@@ -384,8 +366,6 @@ def parallel():
     startConf = confDict["startServer"].format(envName=envName, projectName=projectName)
     deploythreadNum = confDict["deploythreadNum"]
     buildthreadNum = confDict["buildthreadNum"]
-    # kubeconfig = confDict["kubeconfig"].format(envName=envName)
-    #     # kubectl = confDict["kubectl"]
     resultYml = confDict["resultYml"].format(envName=envName)
     if action == "reset":
         # 因错误的执行或者强制停止可以重置启动文件，控制从第一个工程执行操作

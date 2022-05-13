@@ -15,7 +15,6 @@ class build():
     def __init__(self, serverConf,envConf,severName):
         options, args = getOptions()
         self.action = options.action
-        # self.serverName = options.serverName
         self.serverName = severName
         self.branchName = options.branchName
         self.mbranchName = options.mbranchName
@@ -69,13 +68,11 @@ class build():
         self.userName = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["userName"]
         self.passWord = self.confDict["imageRepo-{envName}".format(envName=self.envName)]["passWord"]
         self.http_port = self.serverDict[self.serverName]["http_port"]
-        # self.replicas = self.serverDict[self.serverName]["replicas"]
-        # self.hpaMax = self.serverDict[self.serverName]["hpaMax"]
-        # self.hpaCPU = self.serverDict[self.serverName]["hpaCPU"]
+
 
     def addResource(self):
         self.targetDir = self.serverDict[self.serverName]["targetDir"].format(envName=self.envName)
-        # self.sysConfigDir = self.confDict["svnsysConfigDir"]
+
         serverNameEnvConfDir = os.path.join(self.sysConfigDir, self.serverName, "resources-%s") % self.envName
         os.chdir(self.sysConfigDir)
         myloger(name=self.serverName, level="INFO", msg="获取新配置")
@@ -127,17 +124,16 @@ class build():
             return False
         else:
             myloger(name=self.serverName, level="INFO", msg="Maven构建成功,结果检查输出文件：%s" % self.resultYml)
-            # writhfile(self.buildResult, "%s build maven success!" % self.serverName)
+
             statusDict[self.serverName]["buildMavenResult"] = True
             statusDict[self.serverName]["deployResult"] = False
             writeYml(self.resultYml, statusDict)
-            # print(readYml(self.resultYml))
+
             return True
 
     def buildMavenTomcat(self):
-        # serverNameDict = projectDict[serverName]
-        # serverDict = getDeploymentTomcatPath(serverName)
         ###############
+        ## 特殊处理。这步可以省略
         if not os.path.exists(self.buildDir):
             myloger(name=self.serverName, level="INFO", msg="项目未初始化,请初始化")
             sys.exit()
@@ -173,8 +169,7 @@ class build():
         self.menLimits = self.serverDict[self.serverName]["limits"]["memory"]
         self.menRequests = self.serverDict[self.serverName]["requests"]["memory"]
         self.startMemory = self.serverDict[self.serverName]["requests"]["startMemory"]
-        # self.jmxPort = self.serverDict[self.serverName]["jmxPort"]
-        # dicttmp["jmxPort"] = self.jmxPort
+
         tmp = self.confDict["tomcatCatalinaTmp"]
         servertmp = self.confDict["tomcatServerTmp"]
         copyFile(self.serverName,servertmp,self.buildDir)
@@ -189,7 +184,6 @@ class build():
         dicttmp["xmn"] = xmn
         # 应用skywalking 增加环境名称
         dicttmp["pinpointid"] = self.serverName + self.envName
-        # dicttmp["pinpointid"] = serverName + ip[-1:4]
         genTmpFile(self.serverName,dicttmp,tmp,CatalinaPath)
 
     def genCatalina(self):
@@ -212,7 +206,6 @@ class build():
         dicttmp["xmn"] = xmn
         # 应用skywalking 增加环境名称
         dicttmp["pinpointid"] = self.serverName + self.envName
-        # dicttmp["pinpointid"] = serverName + ip[-1:4]
         genTmpFile(self.serverName,dicttmp,tmp,CatalinaPath)
     def buildImageTomcat(self):
         tag = self.genVersion()
@@ -269,7 +262,6 @@ class build():
             myloger(name=self.serverName,
                              msg="清理{serverName}历史文件：{jar}".format(serverName=self.serverName,jar=newJarPath))
             os.remove(newJarPath)
-        # sys.exit()
         shutil.copy(self.deployFile.format(envName=self.envName), self.jarPath)
         if not os.path.exists(newJarPath):
             myloger(name=self.serverName, msg="复制{jar} to {jarPath} 失败!".format(jar=self.deployFile.format(envName=self.envName),jarPath=newJarPath))
@@ -279,7 +271,7 @@ class build():
             return os.path.join("jarDir",self.jarName)
 
     def genVersion(self):
-        # tmpOutDir = self.tmpOutDir
+
         myloger(name=self.serverName,msg="生成版本号!")
         versionDir = os.path.join(self.tmpOutDir, "versionDir")
         versionFile = os.path.join(self.tmpOutDir, "versionDir", "{serverName}-{envName}.txt".format(
@@ -318,9 +310,6 @@ class build():
         tag = self.genVersion()
 
         newJarPath = self.moveJar()
-        # sys.exit()
-        # 拷贝 构建好的jar 包 到部署目录用于 构建镜像s
-        # copyFile(serverName)
         self.startMemory = self.serverDict[self.serverName]["requests"]["startMemory"]
         xms = self.startMemory
         xmx = self.startMemory
@@ -336,7 +325,6 @@ class build():
         skywalkingAgentDeply = os.path.join(self.masterDir, "agent")
         if os.path.exists(skywalkingAgentDeply):
             shutil.rmtree(skywalkingAgentDeply)
-            # shutil.rmtree(serverSysConfigDir)
         myloger(name=self.serverName,
                        msg="部署skywalking agent!")
         copyDir(self.serverName, skywalkingAgentTmp, skywalkingAgentDeply)
@@ -397,12 +385,10 @@ class build():
             myloger(name=self.serverName, msg="目标服务器尝试执行 'ln -s %s /usr/bin/node' 在重试" % self.node)
             myloger(name=self.serverName, msg="目标服务器尝试执行 'ln -s %s /usr/bin/npm' 在重试" % self.npm)
             return False
-        # cmd = "sudo {npm} install".format(npm=self.npm)
         cmd = "su - root -c 'cd {buildDir} && {npm} install'".format(buildDir=self.buildDir, npm=self.npm)
         stdout, stderr = execSh(self.serverName, cmd)
 
         cmdbuild = "su - root -c 'cd {buildDir} && {npm} run build-{envName}'".format(buildDir=self.buildDir, npm=self.npm,envName=self.envName)
-        # cmdbuild = "su - root -c 'cd {buildDir} && {npm} run build-test'".format(buildDir=self.buildDir, npm=self.npm,envName=self.envName)
         stdout, stderr = execSh(self.serverName, cmdbuild)
         statusDict = result(self.resultYml, self.serverName)
         if "BUILD FAILURE" in stdout:
@@ -424,7 +410,6 @@ class build():
         tag = self.genVersion()
         jarName = self.deployFile.split("/")[-1]
         # 拷贝 构建好的jar 包 到部署目录用于 构建镜像s
-        # copyFile(serverName)
         myloger(name=self.serverName, msg="构建镜像:%s" % (self.serverName))
         # 切换工作目录
         os.chdir(self.masterDir)
@@ -467,8 +452,6 @@ class build():
             execSh(self.serverName,"docker push %s" % self.imgUrl)
         if "unauthorized: project not found" in stderr:
             myloger(name=self.serverName, msg="project is not found in %s !" % self.repUrl)
-            # self.loginRepo()
-            # execSh(self.serverName,"docker push %s" % self.imgUrl)
             sys.exit()
 
     def loginRepo(self):

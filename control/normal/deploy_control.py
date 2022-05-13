@@ -13,7 +13,6 @@ class deployControl():
         self.build = build(serverConf, configFile, serverName)
         self.codeType = self.build.serverDict[serverName]["codeType"]
         self.buildType = self.build.serverDict[serverName]["buildType"]
-        # self.envConf = envConf
         self.configFile = configFile
         self.serverConf = serverConf
         self.projectName = self.build.projectName
@@ -31,12 +30,6 @@ class deployControl():
         self.deploymentAppDir = self.build.confDict["deploymentAppDir"]
         self.tomcatPrefix = self.build.confDict["tomcatPrefix"]
         self.bakDir = self.build.confDict["bakDir"]
-    # def initSys(self):
-    #     # 初始化 syconfig本地git仓库
-    #     self.git.init("sysconfig",self.sysConfigDir,self.gitsysConfig)
-    # def reinitSys(self):
-    #     cleanDir(self.sysConfigDir)
-    #     self.git.init("sysconfig",self.sysConfigDir,self.gitsysConfig)
     def delployNodeDir(self,serverName, env):
         serverNameDict = self.build.serverDict[serverName]
         deployDir = serverNameDict["deployDir"]
@@ -56,12 +49,10 @@ class deployControl():
         # 本地测试用
         copyFILE = 'ansible %s -i %s -m copy -a "src=%s dest=%s"' % (
             deploynode, self.ansibleHost, distDir, deployDir)
-        # ReturnExec(copyFILE)
+
         stdout, stderr = execSh(serverName, copyFILE)
 
     def execAnsible(self,serverName, deploynode, action, env, typeName, version="-1"):
-        # build.projectName
-        serverNameDict = self.build.serverDict[serverName]
         statusDict = {}
         myloger(name=serverName, level="INFO", msg=" server:%s is %s now " % (serverName, action))
         cmd = "ansible %s -i %s -m shell -a '%s %s -a %s -n %s -e %s -t %s -v %s -f %s -p %s'" % (
@@ -87,7 +78,6 @@ class deployControl():
             return True
 
     def getDeploymentTomcatPath(self,serverName):
-        # deployServerDir = os.path.join(self.deploymentAppDir, "%s%s") % (self.tomcatPrefix, serverName)
         deployServerDir = self.build.serverDict[serverName]["deployDir"]
         deployServerWarDir = os.path.join(self.deploymentAppDir, "%s%s/%s") % (self.tomcatPrefix, serverName, "webapps/ROOT")
         deployServerWar = os.path.join(self.deploymentAppDir, "%s%s/%s") % (self.tomcatPrefix, serverName, "webapps/ROOT.war")
@@ -117,9 +107,6 @@ class deployControl():
         execSh(serverName,copyFILE)
 
 def main(serverName,serverConf, configFile):
-    # options = Options()
-    # options, args = getOptions()
-    # options.serverName = serverName
     k = deployControl(serverConf, configFile, serverName)
     k.build.serverName = serverName
     k.build.buildDir = k.build.serverDict[k.build.serverName]["buildDir"].format(envName=k.build.envName)
@@ -210,8 +197,6 @@ def main(serverName,serverConf, configFile):
             k.delployNodeDir(serverName, k.build.envName)
 
     elif k.build.action == "rollback":
-        # git仓库本地重新初始化
-        # k.rollback()
         k.execAnsible(serverName, deploynode, "rollback", k.build.envName, k.buildType)
     elif k.build.action == "createBranch":
         # 创建新分支

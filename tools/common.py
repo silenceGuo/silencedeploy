@@ -80,9 +80,7 @@ def execSh(serverName,cmd, print_msg=True):
         p.wait()
         myloger(name=serverName, level="INFO", msg="执行命令结束 exec shell:>>%s<<" %cmd)
     except Exception as e:
-        # print("cuowu:", e)
         myloger(name=serverName, level="ERROR", msg="错误信息:>>%s<<" % e)
-        # sys.exit()
     return stdout_lines, stderr_lines
 
 def dir_is_null(path):
@@ -98,7 +96,6 @@ def execShSmall(cmd):
     # 执行SH命令
     try:
         print("执行ssh命令 %s" % cmd)
-        # myloger(serverName,msg="执行ssh b命令 %s" % cmd)
         p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     except Exception as e:
         print(e)
@@ -111,7 +108,6 @@ def execShSmall(cmd):
 
 
 def printServerName(projectDict):
-    sorted_dict = { }
     serverlist = sortedServerName(projectDict)
     for serverName in serverlist:
         myloger(name="console", msg="可执行服务名：%s" % serverName)
@@ -119,7 +115,6 @@ def printServerName(projectDict):
 def sortedServerName(serverDict):
     sorted_dict = {}
     sorted_list =[]
-    # print(build.serverDict)
     for serName, sub_dict in serverDict.items():
         sorted_dict[int(sub_dict["startNum"])] = serName
     for i in sorted(sorted_dict):
@@ -133,17 +128,12 @@ def readFile(file):
         return False
     info = ""
     with open(file, 'rb') as fd:
-        # return fd.readlines()
-        # print(fd.readlines())
         for i in fd.readlines():
-            # print(i.decode(encoding="utf-8"))
-            # print(i)
             try:
                 info += i.decode("utf-8", errors='ignore')
             except Exception as e:
                 print(e)
                 info += i
-            # print(info)
     return info
 # 读取启动服务顺序文件
 def readfile(file):
@@ -157,7 +147,6 @@ def readfile(file):
 
 def copyFile(serverName,sourfile,disfile):
     try:
-        # print "copy file:%s,to:%s" % (sourfile, disfile)
         myloger(name=serverName, msg="复制文件:%s,to:%s" % (sourfile, disfile))
         shutil.copy2(sourfile, disfile)  # % ( disfile, time.strftime("%Y-%m-%d-%H%M%S"))
     except Exception as e:
@@ -166,7 +155,6 @@ def copyFile(serverName,sourfile,disfile):
 
 def copyDir(serverName,sourfile,disfile):
     try:
-        # print "copy file:%s,to:%s" % (sourfile, disfile)
         myloger(name=serverName, msg="复制目录:%s,to:%s" % (sourfile, disfile))
         shutil.copytree(sourfile, disfile)  # % ( disfile, time.strftime("%Y-%m-%d-%H%M%S"))
     except Exception as e:
@@ -212,21 +200,16 @@ def threadPool(arglist,threadNum,main,*args):
         for ag in arglist:
             obj = threadPool.submit(main, ag, *args)
             tpool.append(obj)
-            # myloger(name=ag, msg="线程执行中!")
             myloger(name=ag, msg="多线程执行:%s，并发线程数:%s" % (ag, threadNum))
         for future in as_completed(tpool):
-            # data = future.result()
-            # myloger(name="thread", msg="线程执行完成!")
             name = threading.current_thread().name
             myloger(name=name, msg="线程执行完成!")
 
-    # threadPool.shutdown(wait=True)
 
 def threadPool2(arglist,threadNum,main,*args):
     #线程池
     tpool = []
     with ThreadPoolExecutor(max_workers=threadNum, thread_name_prefix="test_") as threadPool:
-        # for ag in arglist:
         threadPool.map(main, arglist, *args)
         myloger(name="ss", msg="线程执行中!")
 
@@ -247,8 +230,6 @@ def writeResult(resultYml,envName,serverName,kubectl,kubeconfig):
     statusDict = result(resultYml, serverName)
     try:
         res = checkDeployStatus(serverName, kubectl, envName, kubeconfig)
-        # statusDict[self.build.serverName]["deployResult"] = "True"
-        # writeYml(self.build.resultYml, statusDict)
         statusDict[serverName]["deployResult"] = res
         writeYml(resultYml, statusDict)
     except func_timeout.exceptions.FunctionTimedOut:
@@ -263,7 +244,6 @@ def showResult(resultYml,action,serverName):
         sortlist = serverDict.keys()
     else:
         return
-    # sortlist = sortedServerName(serverDict)
     if serverName == "all":
         for ser in sortlist:
             if action =="build":
@@ -300,7 +280,6 @@ def showResult(resultYml,action,serverName):
 def genConfigFile(serverName,dataDict,tmp,outfile):
     ret = genConfigString(dataDict, tmp)
     myloger(name=serverName, msg="生成%s ,配置文件;%s" % (serverName, outfile))
-    # print(configstring[0:1050])
     fp_config = open(outfile, 'wb')
     fp_config.write(ret)
     fp_config.close()
@@ -319,8 +298,6 @@ def pkill(keys):
         myloger("kill进程", msg="已取消操作")
 
 def genConfigString(dataDict,tmp):
-    # myloger(name=serverName, msg="应用:{serverName},使用模板:{Tmp} 生成".format(
-    #     Tmp=tmp, serverName=serverName))
     loader = template.Loader(tmp)
     ret = loader.load(tmp).generate(**dataDict)
     return ret
@@ -329,7 +306,6 @@ def genConfigString(dataDict,tmp):
 def genTmpFile(serverName,dataDict,tmp,outfile):
     
     ret = genConfigString(dataDict, tmp)
-    # myloger(name=serverName, msg="common生成%s ,配置文件;%s" % (serverName, outfile))
     myloger(name=serverName, msg="应用:{serverName},使用模板:{Tmp} 生成文件:{outfile}".format(
         Tmp=tmp, serverName=serverName,outfile=outfile))
     writhfileb(outfile, ret)
@@ -348,7 +324,6 @@ def getDeployStatus(serverName,kubectl,envName,kubeconfig):
                   "{kubectl} --kubeconfig {kubeconfig} get deployment/{serverName}-{envName} -n {envName}".format(
                       kubectl=kubectl,
                       serverName=serverName, envName=envName,kubeconfig=kubeconfig))
-   # print(stdout)
    return parseGetDeployStatusOut(stdout)
 
 def parseGetDeployStatusOut(stdout):
@@ -367,7 +342,6 @@ def parseDesDeployStatusOut(stdout,serverName, kubectl, envName, kubeconfig):
         lines = stdout.split("\n")
         status = [i.strip() for i in lines if i.startswith("OldReplicaSets") or i.startswith("NewReplicaSet")]
         events = [i.strip("") for i in lines if i.strip().startswith("Normal")]
-        # print(lines)
         eventslen=len(events)
         for i in status:
             name, key = i.split(":")
@@ -391,13 +365,9 @@ def checkDeployStatus(serverName,kubectl,envName,kubeconfig):
             # pass
             myloger(name=serverName, msg="检查服务状态:%s,环境:%s,启动完成！" % (serverName, envName))
             return True
-        # else:
-        #     return getDeployStatus(serverName, kubectl, envName, kubeconfig)
         time.sleep(5)
-    # return
 
 def cleanDir(path):
-    # deploymentAppPath = getDeploymentTomcatPath(serverName)["deployServerDir"]
     if not os.path.exists(path):
         print("Is not exit dir/file: %s" % path)
     if not os.path.isfile(path):
@@ -406,22 +376,17 @@ def cleanDir(path):
            print("clean dir: %s" % path)
        except Exception as e:
            print(e)
-           # sys.exit()
     else:
-        # shutil.rmtree(path)
         os.remove(path)
         print("clean  file: %s " % path)
 
 
 def getip():
     stdout, stderr = execShSmall("ip a")
-    # ipstr = [i.strip() for i in stdout.split(str.encode("\n")) if i.strip().startswith(str.encode("inet 192.168."))]
     ipstr = [i.strip() for i in stdout.split("\n") if i.strip().startswith("inet 192.168.")]
-    # print ipstr
     for i in ipstr:
         if "eth" in i or "eno" in i:
             iplist = i.split(" ")
-            # print iplist
             for ips in iplist:
                 if ips.startswith("192.168.") and not ips.endswith("255"):
                     ip = ips.split("/")[0]
@@ -454,7 +419,6 @@ def Gitinit(serverName,gitUrl,masterDir):
             os.makedirs(masterDir)
         os.chdir(masterDir)
         myloger(name=serverName, msg="deploy path:%s" % os.getcwd())
-        # sys.exit()
         stdout, stderr = execSh(serverName,"git status .")
         if "On branch" in stdout:
             myloger(name=serverName, msg=u"out:%s" % stdout)

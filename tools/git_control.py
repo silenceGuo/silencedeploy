@@ -5,12 +5,9 @@
 # @File : Gitinitv2.py 
 # @Software: PyCharm
 from tools.common import *
-# import tools.common
-
 # @pysnooper.snoop()
 class git():
     def __init__(self,confPath,serverName):
-        # Option = Options()
         options, args = getOptions()
         self.envName = options.envName
         self.serverName = serverName
@@ -23,7 +20,6 @@ class git():
         self.masterDir = serverNameDict["git"]["masterDir"].format(envName=self.envName)
     def init(self,serverName,masterDir,gitUrl):
         myloger(name=serverName, msg="初始化本地仓库:%s" % masterDir)
-        # serverNameDict = self.serverDict[serverName]
         if not os.path.exists(masterDir):
             os.makedirs(masterDir)
         os.chdir(masterDir)
@@ -50,7 +46,6 @@ class git():
 
         myloger(name=serverName, msg="拉取代码%s" % gitUrl)
         pull_cmd = "git pull %s" % gitUrl
-        # pull_cmd = "git clone %s" % gitUrl
         execSh(serverName,pull_cmd)
 
         myloger(name=serverName, msg="添加远程仓库地址%s" % gitUrl)
@@ -88,9 +83,7 @@ class git():
         # 获取项目分支是否为master
         cmd = "git branch"
         stdout, stderr = execSh(self.serverName,cmd)
-        # branch_list = [i.strip() for i in stdout.split("\n") if i][0].split(" ")
         branch_list = [i.strip() for i in stdout.split("\n")]
-        # branchName_str = "* %s" % branchName
         branchName_str = "%s" % masterBranch
         if branchName_str in branch_list:
             myloger(name=self.serverName, msg="%s 分支已经存在" % masterBranch)
@@ -102,8 +95,6 @@ class git():
         return input_str.strip().lower()
 
     def merge(self, branchName,masterBranch):
-        # if branchName == masterBranch == "master":
-        # checkout_b_cmd = "git checkout %s" % branchName
         myloger(name=self.serverName, msg="合并分支：%s 至 %s" % (branchName, masterBranch))
         try:
             myloger(name=self.serverName, msg="切换工作目录")
@@ -120,12 +111,10 @@ class git():
             self. myloger(name=self.serverName, msg="stderr:%s" % stderr)
             myloger(name=self.serverName, msg="请检查分支 branchname:%s" % branchName)
             return False
-        # ReturnExec(fetch_cmd)
         myloger(name=self.serverName, msg="更新本地分支")
         pull_cmd = "git pull"
         execSh(self.serverName, pull_cmd)
         # 切换至master分支
-        # if not self.checkBranch(m_branch):
         myloger(name=self.serverName, msg="切换至%s分支 " % masterBranch)
         checkout_m_cmd = "git checkout %s" % masterBranch
         stdout,stderr = execSh(self.serverName,checkout_m_cmd)
@@ -186,7 +175,6 @@ class git():
             print(e)
             return False
         myloger(name=self.serverName, msg="更新%s分支" % branchName)
-        # execSh(self.serverName, pull_cmd)
         execSh(self.serverName, "git add .")
         execSh(self.serverName, "git commit -m 'cmdpush'")
         execSh(self.serverName, "git push")
@@ -260,7 +248,6 @@ class git():
             if i.strip():
                 sublist = [j.strip() for j in i.strip().split("\n") if j]
                 commitDict[sublist[0]] = sublist[1:]
-        # print(commitDict)
         return commitDict
 
 

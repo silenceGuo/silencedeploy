@@ -96,7 +96,6 @@ class deployAgent():
         deployServerLogsDir = os.path.join(self.deploymentAppDir, "%s%s/%s") % (self.tomcatPrefix, serverName, "logs/catalina.out")
         deployServerLogsDirBak = os.path.join(self.deploymentAppDir, "%s%s/%s--%s.log") % (
         self.tomcatPrefix, serverName, "logs/catalina.out", dateTime)
-        # deployServerLogsDir = os.path.join(deploymentAppDir, "%s%s/%s-%s.log") % (tomcatPrefix, serverName, "logs/catalina.out",dateTime)
         bakServerDir = os.path.join(self.bakDir, "%s%s") % (self.tomcatPrefix, serverName)
         return {"deployServerDir": deployServerDir,
                 "deployServerWarDir": deployServerWarDir,
@@ -133,7 +132,6 @@ class deployAgent():
                         print("please check conf file with :%s" % e)
                     deployDir = self.getDeploymentTomcatPath(serverName)["deployServerDir"]  # 部署工程目录
                     # 从标准tomcat 复制到部署目录
-                    # self.copyBaseTomcat(serverName)
                     copyDir(serverName,self.baseTomcat,deployDir)
                     # 修改部署tomcat server.xml配置文件
                     chownCmd = "chown -R tomcat:tomcat %s" % deployDir  # 目录权限修改
@@ -150,9 +148,7 @@ class deployAgent():
             print("%s is installed" % serverName)
 
     def installServerType(self, serverName,buildType):
-        # serverNameDict = projectDict[serverName]
         deployDir= self.serverNameDictList[serverName]["deployDir"]
-        # print projectDict
         if buildType == "jar" or buildType == "tomcat":
             usergroup = "tomcat"
             user = "tomcat"
@@ -173,7 +169,6 @@ class deployAgent():
                 print("%s 已经安装，请检查!" % serverName)
                 return False
         else:
-            # os.mkdirs(deployDir)
             os.makedirs(deployDir)
             chownCmd = "chown -R {usergroup}:{user} {deployDir}".format(usergroup=usergroup,user=user,deployDir=deployDir)   # 目录权限修改
             stdout, stderr = execShSmall(chownCmd)
@@ -291,18 +286,16 @@ class deployAgent():
             connector[0].setAttribute("port", str(http_port))  # http port
             connector[0].setAttribute("executor", serverName + "-tomcatThreadPool")  # http port
             # connector[1].setAttribute("port", str(ajp_port))  # ajp port
-        # outfile = File(xmlpath, 'w')
         outfile = open(xmlpath,'wb')
         write = codecs.lookup("utf-8")[3](outfile)
         domtree.writexml(write, addindent=" ", encoding='utf-8')
         write.close()
 
     def uninstallServer(self,serverName):
-        # serverNameDictList = readConf(serverConfPath)
+
         if self.checkServer(serverName):
-            # for serverNameDict in serverNameDictList:
             deployDir = self.getDeploymentTomcatPath(serverName)["deployServerDir"]
-            # deployServerDir()
+
             if serverName in self.serverNameDictList:
                 self.stopServer(serverName)
                 cleanDir(deployDir)
@@ -316,7 +309,6 @@ class deployAgent():
         jar = serverNameDict["deployFile"]
         jarName = jar.split("/")[-1]
         deployjar = os.path.join(deployDir, jarName)
-        # cmd = "pgrep -f %s" % servername
         """处理在打开部署目录下文件的情况下进行部署操作会无法准确获取pid"""
         typeName = serverNameDict["buildType"]
         if typeName == "jar":
@@ -325,7 +317,6 @@ class deployAgent():
             cmd = "pgrep -f %s/temp" % deployDir
         pid, stderr = execShSmall(cmd)
         if pid:
-            # string(pid,)
             # pidlist = [int(i.strip()) for i in pid.split(str.encode("\n")) if i]
             pidlist = [i.strip() for i in pid.split("\n") if i]
             print("%s is started" % serverName)
@@ -401,15 +392,12 @@ class deployAgent():
         xms = serverNameDict["xms"]
         xmx = serverNameDict["xmx"]
         jmxport = serverNameDict['jmx_port']
-        # ip = confDict[]
         startSh = os.path.join(deployDir, "bin/startup.sh")
         if typeName == "jar":
             rootJar = os.path.join(deploydir, "ROOT.jar")
             if os.path.exists(rootJar):
                 cleanDir(deployjar)
                 print("重命名%s 》》 %s" % (rootJar, deployjar))
-            # if os.path.exists(deployjar):
-
                 os.rename(rootJar, deployjar)
 
             if envName == "dev":
@@ -434,7 +422,6 @@ class deployAgent():
         pid = self.getPid(serverName)
         if not pid:
             # 每次启动重新命名catalina 防止一直增长
-            # 使用lograted 配置
             # reNameCatalina(serverName)
             print("Start Server:%s" % (serverName))
             stdout, stderr = execShSmall(cmd)  # 执行 启动服务命令
@@ -443,7 +430,6 @@ class deployAgent():
             if stderr:
                 print("stderr:%s " % stderr)
             for i in range(self.checktime):
-                # time.sleep(5)
                 print("check servname :%s num:%s" % (serverName, i + 1))
                 pidtmp = self.getPid(serverName)
                 if typeName == "jar":
@@ -524,7 +510,6 @@ class deployAgent():
                 cleanDir(deployServerWar)
             if os.path.exists(deployRootWar):
                 cleanDir(deployRootWar)
-            # copyDir(bakdeployWar, deployRootWar)
             if typeName == "node":
                 copyDir(serverName,bakdeployWar, deployServerWar)
             else:
@@ -563,7 +548,6 @@ class deployAgent():
         serverNameDict = self.serverNameDictList[serverName]
         typeName = serverNameDict["buildType"]
         if typeName == "jar":
-            # serverNameDict = serverNameDictList[serverName]
             deploydir = serverNameDict["deployDir"]
             jar = serverNameDict["deployFile"]
             jarName = jar.split("/")[-1]
@@ -583,7 +567,6 @@ class deployAgent():
         except:
             # 获取 备份文件列表 如果没有备份 返回备份起始版本1
             lastVersinId = [time.strftime("%Y-%m-%d-") + "V1"][-1]
-            # print lastVersinId
         if typeName == "jar":
             bakdeployRootWar = os.path.join(bakServerDir, "jar.%sV%s") % (time.strftime("%Y-%m-%d-"), versionId)
             lastbakdeployRootWar = os.path.join(bakServerDir, "jar.%s") % (lastVersinId)
@@ -601,12 +584,10 @@ class deployAgent():
                         copyDir(serverName,deployWar, bakdeployRootWar)
                     else:
                         copyFile(serverName,deployWar, bakdeployRootWar)
-                    # copyDir(deployWar, bakdeployRootWar)
                 else:
                     # 判断 最后一次备份和现在的文件是否 修改不一致，如果一致就不备份，
                     if not getTimeStamp(deployWar) == getTimeStamp(lastbakdeployRootWar):
                         print("back %s >>> %s" % (deployWar, bakdeployRootWar))
-                        # copyDir(deployWar, bakdeployRootWar)
                         if os.path.isdir(deployWar):
                             copyDir(serverName, deployWar, bakdeployRootWar)
                         else:
@@ -617,7 +598,6 @@ class deployAgent():
                         else:
                             print("back %s fail" % deployWar)
                     else:
-                        # print getVersion(serverName)
                         print("File:%s is not modify,not need back" % deployWar)
             else:
                 print("file %s or %s is not exists" % (deployWar, bakdeployRootWar))
@@ -664,7 +644,6 @@ class deployAgent():
         versionIdList = []
         try:
             for i in os.listdir(bakdeployRoot):
-                # print i
                 if typeName == "jar":
                     if i.split(".")[0] == "jar":
                         versionId = i.split(".")[1]
@@ -708,7 +687,6 @@ def main(configFile,action,serverName,version,envName,projectName):
         agenet.changeCatalina(serverName)
     elif action == "changxml":
         agenet.changeXML(serverName)
-        # cleanROOT(serverName)
     elif action == "status":
         if not agenet.getPid(serverName):
             print("%s is stoped" % serverName)
@@ -740,7 +718,6 @@ if __name__ == "__main__":
     envName = options.envName
     projectName = options.projectName
     configFile = options.configFile
-    # serverConf = confDict["serverConf"].format(envName=envName, projectName=projectName)
     confDict = readYml(configFile)
     if projectName in ["normal"]:
         serverConf = confDict["serverConf"].format(envName=envName,projectName=projectName)
@@ -753,6 +730,5 @@ if __name__ == "__main__":
             for seName, portDict in serverNameDict.iteritems():
                 main(configFile,action, seName, version, envName,projectName)
     else:
-       # serverconf, action, serverName, version, envName
        main(configFile,action, serverName, version, envName,projectName)
 
