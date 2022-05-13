@@ -17,7 +17,6 @@ class deployControl():
         self.configFile = configFile
         self.serverConf = serverConf
         self.projectName = self.build.projectName
-
         if self.codeType == "git":
             self.git = git(serverConf, serverName)
         else:

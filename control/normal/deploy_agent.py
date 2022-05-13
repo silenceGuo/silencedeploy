@@ -10,7 +10,10 @@ import xml.dom.minidom
 import codecs
 from collections import Counter
 import sys
-sys.path.append('/silencedeploy') ## 项目的绝对路径
+absfile= sys.argv[0]
+dirabs=os.path.abspath(os.path.join(absfile, "../../../"))
+sys.path.append(dirabs) ## 项目的绝对路径 包的引进路径
+# sys.path.append('/silencedeploy') ## 项目的绝对路径
 from tools.common import *
 
 class deployAgent():
