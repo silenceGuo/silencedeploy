@@ -384,8 +384,8 @@ def parallel():
     startConf = confDict["startServer"].format(envName=envName, projectName=projectName)
     deploythreadNum = confDict["deploythreadNum"]
     buildthreadNum = confDict["buildthreadNum"]
-    kubeconfig = confDict["kubeconfig"].format(envName=envName)
-    kubectl = confDict["kubectl"]
+    # kubeconfig = confDict["kubeconfig"].format(envName=envName)
+    #     # kubectl = confDict["kubectl"]
     resultYml = confDict["resultYml"].format(envName=envName)
     if action == "reset":
         # 因错误的执行或者强制停止可以重置启动文件，控制从第一个工程执行操作
@@ -395,6 +395,7 @@ def parallel():
     if serverName == "all":
         sortlist = sortedServerName(serverDict)
         tpool=[]
+        # 线程池并发
         # if action in ["deploy","status", "build", "restart", "redeploy", "canary", "rollback"]:
         if action in ["deploy", "redeploy","restart", "canary", "rollback","status"]:
             for serName in sortlist:

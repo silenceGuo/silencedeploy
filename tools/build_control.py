@@ -291,7 +291,6 @@ class build():
             os.makedirs(versionDir)
         dateNow = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
         versionID = "{dateNow}-{version}".format(dateNow=dateNow, version=self.versionId)
-        # self.versionID = versionID
         with open(versionFile, "w+") as fd:
             myloger(name=self.serverName, msg="版本号:%s，写入文件:%s!" % (versionID,versionFile))
             fd.write(versionID)
@@ -317,7 +316,7 @@ class build():
 
     def buildImage(self):
         tag = self.genVersion()
-        # jarName = self.jar.split("/")[-1]
+
         newJarPath = self.moveJar()
         # sys.exit()
         # 拷贝 构建好的jar 包 到部署目录用于 构建镜像s

@@ -150,7 +150,7 @@ def main(serverName,serverConf, configFile):
         # 用于批量远程修改tomcat 启动参数 不用重新部署
         k.execAnsible(serverName,deploynode, k.build.action, k.build.envName,k.buildType)
     elif k.build.action == "changxml":
-        # 用于批量远程修改tomcat 服务参数启动参数 不用重新部署72
+        # 用于批量远程修改tomcat 服务参数启动参数 不用重新部署
         k.execAnsible(serverName,deploynode, k.build.action, k.build.envName,k.buildType)
     elif k.build.action == "deploy":
         if k.buildType == "node":
@@ -243,7 +243,6 @@ def parallel():
     absDir = os.path.abspath("../../config")
     if configFile == "config.yaml":
         configFile = os.path.join(absDir, configFile)
-
     confDict = readYml(configFile)
     if projectName in ["normal"]:
         serverConf = confDict["serverConf"].format(envName=envName, projectName=projectName)
@@ -277,7 +276,7 @@ def parallel():
                 else:
                     tpool.append(serName)
             threadPool(tpool, deploythreadNum, main, serverConf, configFile)
-        elif action in ["build1",'status']:
+        elif action in ["build",'status']:
             threadPool(sortlist, buildthreadNum, main, serverConf, configFile)
         else:
             if readfile(startConf):
